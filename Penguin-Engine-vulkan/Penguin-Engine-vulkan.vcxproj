@@ -26,6 +26,9 @@
     <None Include="src\shaders\shader.frag" />
     <None Include="src\shaders\shader.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\vertexData.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
