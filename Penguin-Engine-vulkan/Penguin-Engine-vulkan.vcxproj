@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\compileShaders.bat" />
@@ -27,6 +28,10 @@
     <None Include="src\shaders\shader.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\RenderObject.h" />
+    <ClInclude Include="src\Transform.h" />
+    <ClInclude Include="src\TransformObject.h" />
     <ClInclude Include="src\vertexData.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
