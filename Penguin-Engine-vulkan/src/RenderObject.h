@@ -7,9 +7,21 @@
 
 #include "TransformObject.h"
 
+struct RenderObjectUniformBufferOjbect {
+	alignas(16) glm::mat4 model;
+};
+
 class RenderObject : public TransformObject {
 public:
-	
+	RenderObjectUniformBufferOjbect* GetUniformBufferObject() {
+		_modelUniformBufferObject.model = transform.getLocalToWorldMatrix();
+		return &_modelUniformBufferObject;
+	}
+
+	float rotOffset = 0.0f;
+private:
+	RenderObjectUniformBufferOjbect _modelUniformBufferObject;
 };
+
 
 #endif

@@ -12,7 +12,8 @@
 
 class Transform {
 	glm::vec3 _position;
-	glm::quat _rotation;
+	glm::quat _rotationQuat;
+	glm::mat4 _rotationMat;
 	glm::vec3 _scale;
 
 	glm::vec3 _forward;
@@ -29,7 +30,10 @@ public:
 
 	void SetRotation_Euler(glm::vec3);
 	void SetRotation_Quat(glm::quat);
-	glm::quat GetRotation();
+	void SetRotation_Matrix(glm::mat4);
+
+	glm::quat GetRotationQuat();
+	glm::mat4 GetRotationMatrix();
 
 	void SetScale(glm::vec3);
 	glm::vec3 GetScale();
@@ -39,12 +43,18 @@ public:
 	glm::vec3 getUp();
 	void computeModelMatrices();
 
+	void setLocalToWorldMatrix(glm::mat4 modelMat);
+
 	glm::mat4 getLocalToWorldMatrix();
 	glm::mat4 getWorldToLocalMatrix();
 
 	void RotateAtAxis(glm::vec3 rotationPos, float angleRadians, glm::vec3 rotationAxis);
 
 	void LookAt(glm::vec3 position, glm::vec3 upVector);
+	void LookAt(glm::vec3 eyePos, glm::vec3 position, glm::vec3 upVector);
+
+	void updateTransformComponents();
+	void computeDirectionalVectors();
 };
 
 #endif
