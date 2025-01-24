@@ -23,6 +23,10 @@ public:
 
 	}
 
+	~Camera() {
+
+	}
+
 	Camera(float fov, float aspectRatio, float nearPlane, float farPlane) {
 		this->fov = fov;
 		this->aspectRatio = aspectRatio;

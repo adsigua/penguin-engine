@@ -35,7 +35,6 @@
 #include "Camera.h"
 #include "VKEngine.h"
 
-
 class HelloTriangleApplication {
 public:
     void run() {
@@ -50,7 +49,7 @@ private:
     GLFWwindow* window;
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
-    VKEngine renderer;
+    PenguinEngine::Graphics::VKEngine renderer;
 
     std::vector<RenderObject> _renderedObjects;
 
@@ -125,7 +124,7 @@ private:
 };
 
 
-int main() {
+int main(int argc, char* argv[]) {
     unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     std::srand(seed);
 
