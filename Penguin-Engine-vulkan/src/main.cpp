@@ -53,8 +53,8 @@ private:
 
     std::vector<RenderObject> _renderedObjects;
 
-    const uint16_t SPAWN_COUNT = 20;
-    const float SPAWN_SIZE = 10.0f;
+    const uint16_t SPAWN_COUNT = 30;
+    const float SPAWN_SIZE = 12.0f;
 
     Camera camera;
     RenderObject squareObject;
@@ -77,7 +77,7 @@ private:
 
     void createObjects() {
         camera = Camera(75.0f, renderer.GetSwapChainAspectRatio(), 0.1f, 200.0f);
-        camera.transform.LookAt(glm::vec3(0.0f, 3.0f, 12.0f), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+        camera.transform.LookAt(glm::vec3(0.0f, 0.0f, 15.0f), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 
         _renderedObjects.resize(SPAWN_COUNT);
         for (int i = 0; i < _renderedObjects.size(); i++) {
@@ -85,7 +85,7 @@ private:
             xPos = xPos - 0.5f;
             yPos = yPos - 0.5f;
             RenderObject renderObj = RenderObject();
-            renderObj.transform.SetPosition(glm::vec3(xPos * SPAWN_SIZE, yPos * 0.2f * SPAWN_SIZE, zPos * SPAWN_SIZE));
+            renderObj.transform.SetPosition(glm::vec3(xPos * SPAWN_SIZE, yPos * 0.5f * SPAWN_SIZE, zPos * SPAWN_SIZE));
             renderObj.rotOffset = (rand() % 100) / 100.0f * 10.f;
             _renderedObjects[i] = renderObj;
         }
@@ -111,7 +111,7 @@ private:
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
             updateObjects();
-            renderer.DrawFrame(window, camera, &_renderedObjects);
+            renderer.DrawFrame(camera, &_renderedObjects);
         }
         renderer.WaitRendererIdle();
     }

@@ -48,24 +48,37 @@ namespace Graphics {
     #endif
 
     const std::vector<Vertex> vertices = {
-        {{ -0.5f,  0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f,  0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f,  -0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}},
-        {{ -0.5f, -0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}},
+        {{ -0.5f,  0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} },    //0
+        {{ 0.5f,  0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} },     //1   
+        {{ 0.5f,  -0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} },    //2
+        {{ -0.5f, -0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },    //3
 
-        {{ -0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}},
-        {{ 0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}},
-        {{ -0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}},
+        {{ -0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} },   //4
+        {{ 0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },    //5
+        {{ 0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} },    //6
+        {{ -0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} },   //7
+
+
+        {{ -0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} },   //7{8}
+        {{ 0.5f,  0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },    //6{9}
+        {{ -0.5f,  0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} },    //0{10}
+        {{ 0.5f,  0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} },     //1{11}  
+
+        {{ 0.5f,  -0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} },    //2{12}
+        {{ -0.5f, -0.5f, 0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} },    //3{13}
+        {{ -0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} },   //4{14}
+        {{ 0.5f, -0.5f, -0.5f},  {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },    //5{15}
     };
 
     const std::vector<uint16_t> indices = {
         0, 1, 2, 0, 2, 3, //front
         6, 7, 4, 6, 4, 5, //back
-        3, 5, 4, 3, 2, 5, //top
-        7, 6, 1, 7, 1, 0, //bottom
+
         1, 6, 5, 1, 5, 2, //right
         7, 0, 3, 7, 3, 4, //left
+
+        8, 9, 11, 8, 11, 10, //top
+        14, 12, 15, 14, 13, 12, //bottom
     };
 
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -156,9 +169,12 @@ namespace Graphics {
         return buffer;
     }
 
-
     class VKEngine {
     public:
+        ~VKEngine() {
+            
+        }
+
         void InitVulkan(GLFWwindow* window) {
             createInstance();
             setupDebugMessenger();
@@ -174,13 +190,6 @@ namespace Graphics {
 
             createRenderPass();
 
-            createUniformBuffers();
-            createDescriptorPool();
-            createDescriptorSetLayout();
-            createDescriptorSets();
-
-            createGraphicsPipeline();
-
             createFramebuffers();
 
             createCommandPool();
@@ -191,6 +200,13 @@ namespace Graphics {
 
             createVertexBuffer();
             createIndexBuffer();
+
+            createUniformBuffers();
+            createDescriptorPool();
+            createDescriptorSetLayout();
+            createDescriptorSets();
+
+            createGraphicsPipeline();
 
             createCommandBuffer();
 
@@ -303,16 +319,18 @@ namespace Graphics {
             }
 
             vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
-            vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
 
             vkDestroyBuffer(_device, _indexBuffer, nullptr);
             vkFreeMemory(_device, _indexBufferMemory, nullptr);
             vkDestroyBuffer(_device, _vertexBuffer, nullptr);
             vkFreeMemory(_device, _vertexBufferMemory, nullptr);
 
+            vkDestroySampler(_device, _textureSampler, nullptr);
             vkDestroyImageView(_device, _textureImageView, nullptr);
             vkDestroyImage(_device, _textureImage, nullptr);
             vkFreeMemory(_device, _textureImageMemory, nullptr);
+
+            vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 _frames[i].DestroyFrameData(_device);
@@ -371,7 +389,8 @@ namespace Graphics {
 
         FrameData _frames[MAX_FRAMES_IN_FLIGHT];
 
-        std::vector<VkFramebuffer> swapChainFramebuffers;
+        //std::vector<VkFramebuffer> _swapChainFramebuffers;
+        std::vector<VkFramebuffer> _swapChainFramebuffers;
 
         VkBuffer _vertexBuffer;
         VkDeviceMemory _vertexBufferMemory;
@@ -391,6 +410,7 @@ namespace Graphics {
         VkImage _textureImage;
         VkDeviceMemory _textureImageMemory;
         VkImageView _textureImageView;
+        VkSampler _textureSampler;
 
         bool _framebufferResized = false;
 
@@ -596,7 +616,10 @@ namespace Graphics {
                 swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
             }
 
-            return indices.isComplete() && extensionsSupported && swapChainAdequate;
+            VkPhysicalDeviceFeatures supportedFeatures;
+            vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+            return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
         }
 
         bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -692,6 +715,7 @@ namespace Graphics {
             }
 
             VkPhysicalDeviceFeatures deviceFeatures{};
+            deviceFeatures.samplerAnisotropy = VK_TRUE;
 
             VkDeviceCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -755,7 +779,7 @@ namespace Graphics {
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
             createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-            createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+            createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
             createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
             createInfo.pfnUserCallback = debugCallback;
         }
@@ -859,17 +883,15 @@ namespace Graphics {
             createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
             QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
-            uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value() };
+            uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
             if (indices.graphicsFamily != indices.presentFamily) {
                 createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-                createInfo.queueFamilyIndexCount = static_cast<uint32_t>(deviceExtensions.size());
+                createInfo.queueFamilyIndexCount = 2;
                 createInfo.pQueueFamilyIndices = queueFamilyIndices;
             }
             else {
-                createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-                createInfo.queueFamilyIndexCount = static_cast<uint32_t>(deviceExtensions.size()) - 1; // Optional
-                createInfo.pQueueFamilyIndices = queueFamilyIndices; // Optional
+                createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
             }
 
             createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
@@ -902,9 +924,15 @@ namespace Graphics {
         }
 
         void cleanupSwapChain() {
-            for (auto framebuffer : swapChainFramebuffers) {
+            for (auto framebuffer : _swapChainFramebuffers) {
                 vkDestroyFramebuffer(_device, framebuffer, nullptr);
             }
+            /*int vecSize = _swapChainFramebuffers.size();
+            for (int i = vecSize - 1; i >= 0; i--) {
+                vkDestroyFramebuffer(_device, _swapChainFramebuffers[i], nullptr);
+                delete _swapChainFramebuffers[i];
+                _swapChainFramebuffers.pop_back();
+            }*/
 
             for (auto imageView : _swapChainImageViews) {
                 vkDestroyImageView(_device, imageView, nullptr);
@@ -927,7 +955,7 @@ namespace Graphics {
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             bufferInfo.size = size;
             bufferInfo.usage = usage;
-            bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
             if (vkCreateBuffer(_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create buffer!");
@@ -1225,7 +1253,7 @@ namespace Graphics {
         }
 
         void createFramebuffers() {
-            swapChainFramebuffers.resize(_swapChainImageViews.size());
+            _swapChainFramebuffers.resize(_swapChainImageViews.size());
 
             for (size_t i = 0; i < _swapChainImageViews.size(); i++) {
                 VkImageView attachments[] = {
@@ -1241,7 +1269,7 @@ namespace Graphics {
                 framebufferInfo.height = _swapChainExtent.height;
                 framebufferInfo.layers = 1;
 
-                if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+                if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create framebuffer!");
                 }
             }
@@ -1294,7 +1322,7 @@ namespace Graphics {
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = _renderPass;
-            renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+            renderPassInfo.framebuffer = _swapChainFramebuffers[imageIndex];
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = _swapChainExtent;
 
@@ -1428,15 +1456,19 @@ namespace Graphics {
             cameraPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             cameraPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
+            VkDescriptorPoolSize texSamplerPoolSize{};
+            texSamplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            texSamplerPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
             VkDescriptorPoolSize renderObjectPoolSize{};
             renderObjectPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             renderObjectPoolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-            VkDescriptorPoolSize poolSizes[] = { cameraPoolSize , renderObjectPoolSize };
+            VkDescriptorPoolSize poolSizes[] = { cameraPoolSize , texSamplerPoolSize, renderObjectPoolSize };
 
             VkDescriptorPoolCreateInfo poolInfo{};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-            poolInfo.poolSizeCount = 2;
+            poolInfo.poolSizeCount = 3;
             poolInfo.pPoolSizes = poolSizes;
             poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
@@ -1453,8 +1485,15 @@ namespace Graphics {
             cameraUboLayoutBinding.pImmutableSamplers = nullptr;
             cameraUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+            VkDescriptorSetLayoutBinding textureUboLayoutBinding{};
+            textureUboLayoutBinding.binding = 1;
+            textureUboLayoutBinding.descriptorCount = 1;
+            textureUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            textureUboLayoutBinding.pImmutableSamplers = nullptr;
+            textureUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
             VkDescriptorSetLayoutBinding modelUboLayoutBinding{};
-            modelUboLayoutBinding.binding = 1;
+            modelUboLayoutBinding.binding = 2;
             modelUboLayoutBinding.descriptorCount = 1;
             modelUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             modelUboLayoutBinding.pImmutableSamplers = nullptr;
@@ -1463,12 +1502,13 @@ namespace Graphics {
             std::vector<VkDescriptorSetLayoutBinding> set_layout_bindings =
             {
                 cameraUboLayoutBinding,
-                modelUboLayoutBinding
+                textureUboLayoutBinding,
+                modelUboLayoutBinding,
             };
 
             VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
             layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutCreateInfo.bindingCount = 2;
+            layoutCreateInfo.bindingCount = set_layout_bindings.size();
             layoutCreateInfo.pBindings = set_layout_bindings.data();
 
             if (vkCreateDescriptorSetLayout(_device, &layoutCreateInfo, nullptr, &_descriptorSetLayout) != VK_SUCCESS) {
@@ -1494,11 +1534,6 @@ namespace Graphics {
                 cameraBufferInfo.range = _cameraUniformBufferMemory[i].bufferSize;
                 cameraBufferInfo.offset = 0;
 
-                VkDescriptorBufferInfo objectBufferInfo{};
-                objectBufferInfo.buffer = _renderOjbectsDynamicUniformBufferMemory[i].uniformBuffer;
-                objectBufferInfo.range = _renderOjbectsDynamicUniformBufferMemory[i].bufferSize;
-                objectBufferInfo.offset = 0;
-
                 VkWriteDescriptorSet cameraDescriptorWrite{};
                 cameraDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 cameraDescriptorWrite.dstSet = _descriptorSets[i];
@@ -1507,21 +1542,40 @@ namespace Graphics {
                 cameraDescriptorWrite.descriptorCount = 1;
                 cameraDescriptorWrite.pBufferInfo = &cameraBufferInfo;
 
+                //Image descriptor write
+                VkDescriptorImageInfo imageInfo{};
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfo.imageView = _textureImageView;
+                imageInfo.sampler = _textureSampler;
+
+                VkWriteDescriptorSet imageDescriptorWrite{};
+                imageDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                imageDescriptorWrite.dstSet = _descriptorSets[i];
+                imageDescriptorWrite.dstBinding = 1;
+                imageDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                imageDescriptorWrite.descriptorCount = 1;
+                imageDescriptorWrite.pImageInfo = &imageInfo;
+
+                VkDescriptorBufferInfo objectBufferInfo{};
+                objectBufferInfo.buffer = _renderOjbectsDynamicUniformBufferMemory[i].uniformBuffer;
+                objectBufferInfo.range = _renderOjbectsDynamicUniformBufferMemory[i].alignmentSize;
+                objectBufferInfo.offset = 0;
+
                 VkWriteDescriptorSet objectDescriptorWrite{};
                 objectDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 objectDescriptorWrite.dstSet = _descriptorSets[i];
-                objectDescriptorWrite.dstBinding = 1;
+                objectDescriptorWrite.dstBinding = 2;
                 objectDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
                 objectDescriptorWrite.descriptorCount = 1;
                 objectDescriptorWrite.pBufferInfo = &objectBufferInfo;
 
-                VkWriteDescriptorSet descriptorWriteSets[] = { cameraDescriptorWrite , objectDescriptorWrite };
-                vkUpdateDescriptorSets(_device, 2, descriptorWriteSets, 0, nullptr);
+                VkWriteDescriptorSet descriptorWriteSets[] = { cameraDescriptorWrite , imageDescriptorWrite, objectDescriptorWrite };
+                vkUpdateDescriptorSets(_device, 3, descriptorWriteSets, 0, nullptr);
             }
         }
 #pragma endregion
 
-#pragma region Texture
+#pragma region Textures
         void createTextureImage() {
             int texWidth, texHeight, texChannels;
             stbi_uc* pixels = stbi_load("resources/textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -1673,14 +1727,6 @@ namespace Graphics {
             endSingleTimeCommands(commandBuffer);
         }
 
-        void createTextureImageView() {
-            _textureImageView = createImageView(_textureImage, VK_FORMAT_R8G8B8A8_SRGB);
-        }
-
-        void createTextureSampler() {
-
-        }
-
         VkImageView createImageView(VkImage image, VkFormat format) {
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1700,6 +1746,35 @@ namespace Graphics {
 
             return imageView;
         }
+
+        void createTextureImageView() {
+            _textureImageView = createImageView(_textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+        }
+
+        void createTextureSampler() {
+            VkSamplerCreateInfo samplerInfo{};
+            samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            samplerInfo.magFilter = VK_FILTER_LINEAR;
+            samplerInfo.minFilter = VK_FILTER_LINEAR;
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            samplerInfo.anisotropyEnable = VK_TRUE;
+            samplerInfo.maxAnisotropy = _physicalDeviceProperties.limits.maxSamplerAnisotropy;
+            samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+            samplerInfo.unnormalizedCoordinates = VK_FALSE;
+            samplerInfo.compareEnable = VK_FALSE;
+            samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+            samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            samplerInfo.mipLodBias = 0.0f;
+            samplerInfo.minLod = 0.0f;
+            samplerInfo.maxLod = 0.0f;
+            
+            if (vkCreateSampler(_device, &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create texture sampler!");
+            }
+        }
+
 #pragma endregion
 
 #pragma region Syncing
