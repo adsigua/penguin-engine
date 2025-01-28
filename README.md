@@ -19,6 +19,6 @@ The goal of this project is for me to expand my knowledge in game dev, specially
 + Make a better readme  
   
 #### Far-off goals:
-+ Reimplement rendering engine on different apis (mainly direct-x and opengl, but maybe on other web apis as well)  
++ Reimplement rendering engine on different apis (mainly directx and opengl, but maybe on other web apis as well)  
 + Implement more game-engine systems, and maybe convert the project to a game engine entirely  
 
