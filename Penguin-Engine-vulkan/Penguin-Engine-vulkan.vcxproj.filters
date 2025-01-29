@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{de7ba638-7495-4fb6-b802-9284bd4f4c44}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Graphics">
+      <UniqueIdentifier>{41cdee92-a293-47a0-97e1-5fbbd1d5537f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -23,6 +26,12 @@
     </ClCompile>
     <ClCompile Include="src\Transform.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VKEngine.cpp">
+      <Filter>Header Files\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +59,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\RenderObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VKEngine.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

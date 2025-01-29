@@ -22,7 +22,7 @@ layout(location = 3) out vec4 wPos;
 void main() {
     wPos = ubom.model * vec4(inPosition, 1.0);
     gl_Position =  ubo.proj * ubo.view * wPos;
-    fragTexCoord = vec2(inTexCoord.x, 1.0 - inTexCoord.y);
+    fragTexCoord = inTexCoord;
     pos = inPosition;
     fragColor = inColor;
 }

@@ -1,39 +1,12 @@
-#define GLFW_INCLUDE_VULKAN
-#define NOMINMAX
-
-#define VK_USE_PLATFORM_WIN32_KHR
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-
-#define GLM_FORCE_RADIANS
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-
 #include <stdlib.h>     /* srand, rand */
-#include <fstream>
 
-#include <iostream>
-#include <stdexcept>
-#include <algorithm>
 #include <vector>
-#include <cstring>
-#include <cstdlib>
-#include <cstdint>
-#include <limits>
-#include <optional>
-#include <set>
-#include <chrono>
+#include <iostream>
 
-#include "vertexData.h"
-#include "RenderObject.h"
 #include "TransformObject.h"
 #include "Transform.h"
-#include "Camera.h"
 #include "VKEngine.h"
+#include "Time.h"
 
 class HelloTriangleApplication {
 public:
@@ -53,8 +26,8 @@ private:
 
     std::vector<RenderObject> _renderedObjects;
 
-    const uint16_t SPAWN_COUNT = 30;
-    const float SPAWN_SIZE = 12.0f;
+    const uint16_t SPAWN_COUNT = 1;
+    const float SPAWN_SIZE = 0.0f;
 
     Camera camera;
     RenderObject squareObject;
@@ -77,7 +50,7 @@ private:
 
     void createObjects() {
         camera = Camera(75.0f, renderer.GetSwapChainAspectRatio(), 0.1f, 200.0f);
-        camera.transform.LookAt(glm::vec3(0.0f, 0.0f, 15.0f), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+        camera.transform.LookAt(glm::vec3(0.0f, 1.0f, 2.0f), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 
         _renderedObjects.resize(SPAWN_COUNT);
         for (int i = 0; i < _renderedObjects.size(); i++) {
@@ -89,18 +62,19 @@ private:
             renderObj.rotOffset = (rand() % 100) / 100.0f * 10.f;
             _renderedObjects[i] = renderObj;
         }
+        glm::mat4 objMat = glm::mat4(1.0);
+        _renderedObjects[0].transform.SetRotation_Matrix(objMat);
     }
+
 
     void updateObjects() {
         static auto startTime = std::chrono::high_resolution_clock::now();
-
         auto currentTime = std::chrono::high_resolution_clock::now();
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
         int val = (int)(glm::round(time) / 0.3f);
  
         for (int i = 0; i < _renderedObjects.size(); i++) {
-            _renderedObjects[i].transform.SetRotation_Matrix(glm::rotate(glm::mat4(1.0), (time + _renderedObjects[i].rotOffset) * glm::radians(40.0f), glm::vec3(0, 1.0, 0)));
-            //_renderedObjects[i].transform.setLocalToWorldMatrix(glm::mat4(i+1));
+            _renderedObjects[i].transform.Rotate(glm::radians(20.0f) * PenguinEngine::Time::getDeltaTime(), glm::vec3(0.0, 1.0, 0.0));
         }
 
         camera.aspectRatio = renderer.GetSwapChainAspectRatio();
@@ -109,6 +83,7 @@ private:
 
     void mainLoop() {
         while (!glfwWindowShouldClose(window)) {
+            PenguinEngine::Time::Tick();
             glfwPollEvents();
             updateObjects();
             renderer.DrawFrame(camera, &_renderedObjects);
@@ -127,6 +102,7 @@ private:
 int main(int argc, char* argv[]) {
     unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
     std::srand(seed);
+    PenguinEngine::Time::Init();
 
     HelloTriangleApplication app;
 

@@ -34,6 +34,7 @@ public:
 
 	glm::quat GetRotationQuat();
 	glm::mat4 GetRotationMatrix();
+	void Rotate(float angleRadians, glm::vec3 axis);
 
 	void SetScale(glm::vec3);
 	glm::vec3 GetScale();

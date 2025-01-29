@@ -45,6 +45,10 @@ void Transform::SetRotation_Matrix(glm::mat4 newRotMatrix) {
 	updateTransformComponents();
 }
 
+void Transform::Rotate(float angleRadians, glm::vec3 axis) {
+	SetRotation_Matrix(glm::rotate(_rotationMat, angleRadians, axis));
+}
+
 void Transform::SetScale(glm::vec3 newScale) {
 	_scale = newScale;
 	updateTransformComponents();

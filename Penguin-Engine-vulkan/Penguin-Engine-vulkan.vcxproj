@@ -20,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Time.cpp" />
     <ClCompile Include="src\Transform.cpp" />
+    <ClCompile Include="src\VKEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\compileShaders.bat" />
@@ -29,6 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\Time.h" />
+    <ClInclude Include="src\VKEngine.h" />
     <ClInclude Include="src\RenderObject.h" />
     <ClInclude Include="src\Transform.h" />
     <ClInclude Include="src\TransformObject.h" />
@@ -128,8 +132,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\includes;C:\VulkanSDK\1.3.296.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\lib;C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\lib\stb-master;C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\includes;C:\VulkanSDK\1.3.296.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,8 +150,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\includes;C:\VulkanSDK\1.3.296.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\lib;C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\lib\stb-master;C:\PenguinEngine\penguin-engine\Penguin-Engine-vulkan\includes;C:\VulkanSDK\1.3.296.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
