@@ -14,9 +14,12 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
-#include <optional>
+#include "VMAUsage.h"
+#include "vk_mem_alloc.h"
 
-#include "vertexData.h"
+#include "VKInit.h"
+#include "VKTypes.h"
+#include "VertexData.h"
 #include "RenderObject.h"
 #include "Camera.h"
 
@@ -32,50 +35,6 @@ namespace Graphics {
     const int MAX_FRAMES_IN_FLIGHT = 2;
     const int MAX_INSTANCE_COUNT = 100;
 
-    struct FrameData {
-        VkSemaphore presentSemaphore, renderSemaphore;
-        VkFence renderFence;
-
-        VkCommandPool commandPool;
-        VkCommandBuffer commandBuffer;
-
-        void DestroyFrameData(VkDevice device) {
-            vkDestroySemaphore(device, presentSemaphore, nullptr);
-            vkDestroySemaphore(device, renderSemaphore, nullptr);
-            vkDestroyFence(device, renderFence, nullptr);
-        }
-    };
-
-    struct UniformBufferMemory {
-        VkBuffer uniformBuffer;
-        VkDeviceMemory deviceMemory;
-        void* uniformBuffersMapped;
-        VkDeviceSize alignmentSize;
-        VkDeviceSize bufferSize;
-
-        void DestroyBufferObject(VkDevice device) {
-            vkDestroyBuffer(device, uniformBuffer, nullptr);
-            vkFreeMemory(device, deviceMemory, nullptr);
-        }
-    };
-
-    struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
-        std::optional<uint32_t> transferFamily;
-
-        bool isComplete() {
-            return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
-        }
-    };
-
-    struct SwapChainSupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
-
     const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
@@ -83,8 +42,6 @@ namespace Graphics {
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
-
-
 
     class VKEngine {
     public:
@@ -113,6 +70,9 @@ namespace Graphics {
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
 
+        VmaAllocator _allocator;
+        //DeletionQueue _mainDeleteionQueue;
+
         VkDebugUtilsMessengerEXT _debugMessenger;
         VkInstance _instance;
             
@@ -131,24 +91,26 @@ namespace Graphics {
         std::vector<const char*> _requiredExtensions;
         std::vector<VkExtensionProperties> _supportedExtensions;
 
-        VkSwapchainKHR _swapChain;
-        std::vector<VkImage> _swapChainImages;
-        VkFormat _swapChainImageFormat;
+        FrameData _frames[MAX_FRAMES_IN_FLIGHT];
 
-        std::vector<VkImageView> _swapChainImageViews;
+        VkSwapchainKHR _swapChain;
+        VkFormat _swapChainImageFormat;
         VkExtent2D _swapChainExtent;
+
+        std::vector<SwapChainData> _swapChainData;
+
+        std::vector<VkImage> _swapChainImages;
+        std::vector<VkImageView> _swapChainImageViews;
+        //std::vector<AllocatedImage> _swapChainAllocatedImages;
+        //std::vector<VkFramebuffer> _swapChainFramebuffers;
+        //std::vector<VkFramebuffer> _swapChainFramebuffers;
+        //std::vector<VkFramebuffer> _swapChainFramebuffers;
+        //VkFramebuffer _swapChainFramebuffers[5];
+        //VkFramebuffer *_swapChainFramebuffers;
 
         VkRenderPass _renderPass;
         VkPipelineLayout _pipelineLayout;
         VkPipeline _graphicsPipeline;
-
-        FrameData _frames[MAX_FRAMES_IN_FLIGHT];
-
-        //std::vector<VkFramebuffer> _swapChainFramebuffers;
-        std::vector<VkFramebuffer> _swapChainFramebuffers;
-        //std::vector<VkFramebuffer> _swapChainFramebuffers;
-        //VkFramebuffer _swapChainFramebuffers[5];
-        //VkFramebuffer *_swapChainFramebuffers;
 
         VkBuffer _vertexBuffer;
         VkDeviceMemory _vertexBufferMemory;
@@ -165,17 +127,17 @@ namespace Graphics {
         UniformBufferMemory _cameraUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
         UniformBufferMemory _renderOjbectsDynamicUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
 
-        VkImage _textureImage;
-        VkDeviceMemory _textureImageMemory;
-        VkImageView _textureImageView;
+        //VkImage _textureImage;
+        //VkDeviceMemory _textureImageMemory;
+        //VkImageView _textureImageView;
+
+        AllocatedImage _textureImage;
+        AllocatedImage _depthTextureImage;
         VkSampler _textureSampler;
 
         VkImage _depthImage;
         VkDeviceMemory _depthImageMemory;
         VkImageView _depthImageView;
-
-        //bool _framebufferResized = false;
-        //uint32_t _currentFrame = 0;
 
 #pragma region Init
         void createInstance();
@@ -207,6 +169,8 @@ namespace Graphics {
         void createSurface();
 
         void createSurfaceVulkan(GLFWwindow* window);
+
+        void initVMA();
 #pragma endregion
 
 #pragma region Validation Layers
@@ -284,11 +248,15 @@ namespace Graphics {
 #pragma region Textures
         void createTextureImage();
 
-        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        //void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage* allocatedImage);
 
         void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
         void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+        VkImageView createImageView(AllocatedImage allocatedImage, VkFormat imageViewFormat, VkImageAspectFlags aspectFlags);
 
         VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
