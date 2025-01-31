@@ -756,25 +756,37 @@ namespace PenguinEngine {
                 }
 
                 vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, nullptr);
-                _swapChainImages.resize(imageCount);
-                vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, _swapChainImages.data());
+                //_swapChainImages.resize(imageCount);
+                std::vector<VkImage> swapChainImages(imageCount);
+                vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, swapChainImages.data());
+
+                _swapChainData.resize(imageCount);
+                for (int i = 0; i < imageCount; i++) {
+                    AllocatedImage allocImage{};
+                    allocImage.image = swapChainImages[i];
+
+                    SwapChainData swapChainData{};
+                    swapChainData.allocatedImage = allocImage;
+                    _swapChainData[i] = swapChainData;
+                }
 
                 _swapChainImageFormat = surfaceFormat.format;
                 _swapChainExtent = extent;
             }
 
             void VKEngine::createSwapChainImageViews() {
-                _swapChainImageViews.resize(_swapChainImages.size());
+                //_swapChainImageViews.resize(_swapChainImages.size());
 
-                for (size_t i = 0; i < _swapChainImages.size(); i++) {
-                    _swapChainImageViews[i] = createImageView(_swapChainImages[i], _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+                for (size_t i = 0; i < _swapChainData.size(); i++) {
+                    //_swapChainImageViews[i] = createImageView(_swapChainImages[i], _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+                    _swapChainData[i].allocatedImage.imageView = createImageView(_swapChainData[i].allocatedImage.image, _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
                 }
             }
 
             void VKEngine::cleanupSwapChain() {
-                for (auto framebuffer : _swapChainFramebuffers) {
+                /*for (auto framebuffer : _swapChainFramebuffers) {
                     vkDestroyFramebuffer(_device, framebuffer, nullptr);
-                }
+                }*/
 
                 //int vecSize = 5;
                 //for (int i = vecSize - 1; i >= 0; i--) {
@@ -785,8 +797,12 @@ namespace PenguinEngine {
                 //    //_swapChainFramebuffers.pop_back();
                 //}
 
-                for (auto imageView : _swapChainImageViews) {
+                /*for (auto imageView : _swapChainImageViews) {
                     vkDestroyImageView(_device, imageView, nullptr);
+                }*/
+
+                for (auto swapChainData : _swapChainData) {
+                    swapChainData.DestroySwapChainData(_device, _allocator);
                 }
 
                 vkDestroySwapchainKHR(_device, _swapChain, nullptr);
@@ -1137,12 +1153,13 @@ namespace PenguinEngine {
             }
 
             void VKEngine::createFramebuffers() {
-                _swapChainFramebuffers.resize(_swapChainImageViews.size());
+                //_swapChainFramebuffers.resize(_swapChainImageViews.size());
                 //_swapChainFramebuffers = std::make_unique<VkFramebuffer[]>(_swapChainImageViews.size());
 
-                for (size_t i = 0; i < _swapChainImageViews.size(); i++) {
+                for (size_t i = 0; i < _swapChainData.size(); i++) {
                     std::array<VkImageView, 2> attachments = {
-                        _swapChainImageViews[i],
+                        //_swapChainImageViews[i],
+                        _swapChainData[i].allocatedImage.imageView,
                         _depthImageView
                     };
 
@@ -1155,7 +1172,8 @@ namespace PenguinEngine {
                     framebufferInfo.height = _swapChainExtent.height;
                     framebufferInfo.layers = 1;
 
-                    if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]) != VK_SUCCESS) {
+                    //if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainFramebuffers[i]) != VK_SUCCESS) {
+                    if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr, &_swapChainData[i].frameBuffer) != VK_SUCCESS) {
                         throw std::runtime_error("failed to create framebuffer!");
                     }
                 }
@@ -1212,7 +1230,8 @@ namespace PenguinEngine {
                 VkRenderPassBeginInfo renderPassInfo{};
                 renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
                 renderPassInfo.renderPass = _renderPass;
-                renderPassInfo.framebuffer = _swapChainFramebuffers[imageIndex];
+                //renderPassInfo.framebuffer = _swapChainFramebuffers[imageIndex];
+                renderPassInfo.framebuffer = _swapChainData[imageIndex].frameBuffer;
                 renderPassInfo.renderArea.offset = { 0, 0 };
                 renderPassInfo.renderArea.extent = _swapChainExtent;
 

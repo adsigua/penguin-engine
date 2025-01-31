@@ -14,9 +14,12 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
-#include <optional>
+#include "VMAUsage.h"
+#include "vk_mem_alloc.h"
 
-#include "vertexData.h"
+//#include "VKInit.h"
+#include "VKTypes.h"
+#include "VertexData.h"
 #include "RenderObject.h"
 #include "Camera.h"
 
@@ -32,50 +35,6 @@ namespace Graphics {
     const int MAX_FRAMES_IN_FLIGHT = 2;
     const int MAX_INSTANCE_COUNT = 100;
 
-    struct FrameData {
-        VkSemaphore presentSemaphore, renderSemaphore;
-        VkFence renderFence;
-
-        VkCommandPool commandPool;
-        VkCommandBuffer commandBuffer;
-
-        void DestroyFrameData(VkDevice device) {
-            vkDestroySemaphore(device, presentSemaphore, nullptr);
-            vkDestroySemaphore(device, renderSemaphore, nullptr);
-            vkDestroyFence(device, renderFence, nullptr);
-        }
-    };
-
-    struct UniformBufferMemory {
-        VkBuffer uniformBuffer;
-        VkDeviceMemory deviceMemory;
-        void* uniformBuffersMapped;
-        VkDeviceSize alignmentSize;
-        VkDeviceSize bufferSize;
-
-        void DestroyBufferObject(VkDevice device) {
-            vkDestroyBuffer(device, uniformBuffer, nullptr);
-            vkFreeMemory(device, deviceMemory, nullptr);
-        }
-    };
-
-    struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
-        std::optional<uint32_t> transferFamily;
-
-        bool isComplete() {
-            return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
-        }
-    };
-
-    struct SwapChainSupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
-
     const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
@@ -83,7 +42,6 @@ namespace Graphics {
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
-
 
 
     class VKEngine {
@@ -115,6 +73,8 @@ namespace Graphics {
 
         VkDebugUtilsMessengerEXT _debugMessenger;
         VkInstance _instance;
+
+        VmaAllocator _allocator;
             
         VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
         VkDevice _device;
@@ -132,10 +92,10 @@ namespace Graphics {
         std::vector<VkExtensionProperties> _supportedExtensions;
 
         VkSwapchainKHR _swapChain;
-        std::vector<VkImage> _swapChainImages;
+        //std::vector<VkImage> _swapChainImages;
         VkFormat _swapChainImageFormat;
 
-        std::vector<VkImageView> _swapChainImageViews;
+        //std::vector<VkImageView> _swapChainImageViews;
         VkExtent2D _swapChainExtent;
 
         VkRenderPass _renderPass;
@@ -145,10 +105,12 @@ namespace Graphics {
         FrameData _frames[MAX_FRAMES_IN_FLIGHT];
 
         //std::vector<VkFramebuffer> _swapChainFramebuffers;
-        std::vector<VkFramebuffer> _swapChainFramebuffers;
+        //std::vector<VkFramebuffer> _swapChainFramebuffers;
         //std::vector<VkFramebuffer> _swapChainFramebuffers;
         //VkFramebuffer _swapChainFramebuffers[5];
         //VkFramebuffer *_swapChainFramebuffers;
+
+        std::vector<SwapChainData> _swapChainData;
 
         VkBuffer _vertexBuffer;
         VkDeviceMemory _vertexBufferMemory;
