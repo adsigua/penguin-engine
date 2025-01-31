@@ -32,8 +32,8 @@ namespace PenguinEngine {
         const uint32_t WIDTH = 800;
         const uint32_t HEIGHT = 600;
 
-        const std::string MODEL_PATH = "resources/models/viking_room.obj";
-        const std::string TEXTURE_PATH = "resources/textures/viking_room.png";
+        const std::string MODEL_PATH = "models/viking_room.obj";
+        const std::string TEXTURE_PATH = "textures/viking_room.png";
 
         bool _framebufferResized = false;
         uint32_t _currentFrame = 0;
@@ -114,7 +114,7 @@ namespace PenguinEngine {
                 createVertexBuffer();
                 createIndexBuffer();
 
-                //createUniformBuffers();
+                createUniformBuffers();
                 createDescriptorPool();
                 createDescriptorSetLayout();
                 createDescriptorSets();
@@ -944,9 +944,13 @@ namespace PenguinEngine {
             }
 
             void VKEngine::createGraphicsPipeline() {
-                //shader code
-                auto vertShaderCode = readFile("src/shaders/vert.spv");
-                auto fragShaderCode = readFile("src/shaders/frag.spv");
+                //auto vertShaderCode = readFile("src/shaders/vert.spv");
+                //auto fragShaderCode = readFile("src/shaders/frag.spv");
+                std::string vertFile(SOURCE_PATH), fragFile(SOURCE_PATH);
+                vertFile += "shaders/vert.spv";
+                fragFile += "shaders/frag.spv";
+                auto vertShaderCode = readFile(vertFile);
+                auto fragShaderCode = readFile(fragFile);
                 //shader module (code object?)
                 VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
                 VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1463,8 +1467,9 @@ namespace PenguinEngine {
 #pragma region Textures
             void VKEngine::createTextureImage() {
                 int texWidth, texHeight, texChannels;
-                stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+                //stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
                 //stbi_uc* pixels = stbi_load("resources/textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+                stbi_uc* pixels = stbi_load((RESOURCES_PATH + TEXTURE_PATH).c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
                 VkDeviceSize imageSize = texWidth * texHeight * 4;
 
                 if (!pixels) {
@@ -1721,9 +1726,9 @@ namespace PenguinEngine {
                 tinyobj::attrib_t attrib;
                 std::vector<tinyobj::shape_t> shapes;
                 std::vector<tinyobj::material_t> materials;
-                std::string err;
+                std::string warn, err;
 
-                if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, MODEL_PATH.c_str())) {
+                if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, (RESOURCES_PATH + MODEL_PATH).c_str())) {
                     throw std::runtime_error(err);
                 }
 
