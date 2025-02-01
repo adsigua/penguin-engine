@@ -80,9 +80,13 @@ namespace Graphics {
         VkExtent2D imageExtent;
         VkFormat imageFormat;
         VkDeviceMemory imageMemory;
+        bool useMipMap;
+        uint32_t mipLevels;
 
-        void DestroyAllocatedImage(VkDevice device, VmaAllocator allocator) {
+        void DestroyAllocatedImage(VkDevice device) {
             //vmaDestroyImage(allocator, image, allocation);
+            vkDestroyImage(device, image, nullptr);
+            vkFreeMemory(device, imageMemory, nullptr);
             vkDestroyImageView(device, imageView, nullptr);
         }
     };
@@ -90,10 +94,11 @@ namespace Graphics {
     struct SwapChainData {
         AllocatedImage allocatedImage;
         VkFramebuffer frameBuffer;
+        bool wasInitialized = false;
 
-        void DestroySwapChainData(VkDevice device, VmaAllocator allocator) {
+        void DestroySwapChainData(VkDevice device) {
             vkDestroyFramebuffer(device, frameBuffer, nullptr);
-            allocatedImage.DestroyAllocatedImage(device, allocator);
+            vkDestroyImageView(device, allocatedImage.imageView, nullptr);
         }
     };
 

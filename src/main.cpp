@@ -10,6 +10,10 @@
 
 class HelloTriangleApplication {
 public:
+    /*HelloTriangleApplication() {
+        
+    }*/
+
     void run() {
         initWindow();
         renderer.InitVulkan(window);
@@ -31,6 +35,7 @@ private:
 
     Camera camera;
     RenderObject squareObject;
+    //std::vector<PenguinEngine::Graphics::SwapChainData> _swapChainData;
 
     void initWindow() {
         glfwInit();

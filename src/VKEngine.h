@@ -14,10 +14,9 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
-#include "VMAUsage.h"
-#include "vk_mem_alloc.h"
+//#include "VMAUsage.h"
+//#include "vk_mem_alloc.h"
 
-//#include "VKInit.h"
 #include "VKTypes.h"
 #include "VertexData.h"
 #include "RenderObject.h"
@@ -46,10 +45,11 @@ namespace Graphics {
 
     class VKEngine {
     public:
+        const static int SWAPCHAIN_MAX_SIZE = 5;
 
-        ~VKEngine() {
-            
-        }
+        VKEngine();
+
+        ~VKEngine();
 
         void InitVulkan(GLFWwindow* window);
 
@@ -74,7 +74,7 @@ namespace Graphics {
         VkDebugUtilsMessengerEXT _debugMessenger;
         VkInstance _instance;
 
-        VmaAllocator _allocator;
+        //VmaAllocator _allocator;
             
         VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
         VkDevice _device;
@@ -92,10 +92,8 @@ namespace Graphics {
         std::vector<VkExtensionProperties> _supportedExtensions;
 
         VkSwapchainKHR _swapChain;
-        //std::vector<VkImage> _swapChainImages;
         VkFormat _swapChainImageFormat;
 
-        //std::vector<VkImageView> _swapChainImageViews;
         VkExtent2D _swapChainExtent;
 
         VkRenderPass _renderPass;
@@ -104,13 +102,7 @@ namespace Graphics {
 
         FrameData _frames[MAX_FRAMES_IN_FLIGHT];
 
-        //std::vector<VkFramebuffer> _swapChainFramebuffers;
-        //std::vector<VkFramebuffer> _swapChainFramebuffers;
-        //std::vector<VkFramebuffer> _swapChainFramebuffers;
-        //VkFramebuffer _swapChainFramebuffers[5];
-        //VkFramebuffer *_swapChainFramebuffers;
-
-        std::vector<SwapChainData> _swapChainData;
+        SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
 
         VkBuffer _vertexBuffer;
         VkDeviceMemory _vertexBufferMemory;
@@ -136,6 +128,8 @@ namespace Graphics {
         VkDeviceMemory _depthImageMemory;
         VkImageView _depthImageView;
 
+        //std::vector<SwapChainData> _swapChainData;
+        //std::vector<VkFramebuffer> _swapChainFrameBuffers;
         //bool _framebufferResized = false;
         //uint32_t _currentFrame = 0;
 

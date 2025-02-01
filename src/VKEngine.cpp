@@ -27,254 +27,263 @@
 #include "Transform.h"
 
 namespace PenguinEngine {
-    namespace Graphics {
+namespace Graphics {
 
-        const uint32_t WIDTH = 800;
-        const uint32_t HEIGHT = 600;
+    const uint32_t WIDTH = 800;
+    const uint32_t HEIGHT = 600;
 
-        const std::string MODEL_PATH = "models/viking_room.obj";
-        const std::string TEXTURE_PATH = "textures/viking_room.png";
+    const std::string MODEL_PATH = "models/viking_room.obj";
+    const std::string TEXTURE_PATH = "textures/viking_room.png";
 
-        bool _framebufferResized = false;
-        uint32_t _currentFrame = 0;
+    bool _framebufferResized = false;
+    uint32_t _currentFrame = 0;
+    int _swapChainSize = 0;
 
-        VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-            auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-            if (func != nullptr) {
-                return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-            }
-            else {
-                return VK_ERROR_EXTENSION_NOT_PRESENT;
-            }
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+        }
+        else {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }
+    }
+
+    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            func(instance, debugMessenger, pAllocator);
+        }
+    }
+
+
+    static std::vector<char> readFile(const std::string& filename) {
+        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("failed to open file!");
         }
 
-        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-            auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-            if (func != nullptr) {
-                func(instance, debugMessenger, pAllocator);
-            }
-        }
+        size_t fileSize = (size_t)file.tellg();
+        std::vector<char> buffer(fileSize);
 
+        file.seekg(0);
+        file.read(buffer.data(), fileSize);
 
-        static std::vector<char> readFile(const std::string& filename) {
-            std::ifstream file(filename, std::ios::ate | std::ios::binary);
+        file.close();
+        return buffer;
+    }
 
-            if (!file.is_open()) {
-                throw std::runtime_error("failed to open file!");
-            }
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData) {
 
-            size_t fileSize = (size_t)file.tellg();
-            std::vector<char> buffer(fileSize);
+        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
-            file.seekg(0);
-            file.read(buffer.data(), fileSize);
-
-            file.close();
-            return buffer;
-        }
-
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-            VkDebugUtilsMessageTypeFlagsEXT messageType,
-            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-            void* pUserData) {
-
-            std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-
-            return VK_FALSE;
-        }
+        return VK_FALSE;
+    }
 
 #pragma region Public
+    VKEngine::VKEngine(){
+    }
 
-            void VKEngine::InitVulkan(GLFWwindow* window) {
-                createInstance();
-                setupDebugMessenger();
+    VKEngine::~VKEngine() {
+    }
 
-                _window = window;
 
-                createSurface();
-                pickPhysicalDevice();
-                createLogicalDevice();
+    void VKEngine::InitVulkan(GLFWwindow* window)
+    {
+        createInstance();
+        setupDebugMessenger();
 
-                createSwapChain();
-                createSwapChainImageViews();
+        _window = window;
 
-                createRenderPass();
+        createSurface();
+        pickPhysicalDevice();
+        createLogicalDevice();
 
-                createCommandPool();
+        createSwapChain();
+        createSwapChainImageViews();
 
-                createDepthResources();
-                createFramebuffers();
+        createRenderPass();
 
-                createTextureImage();
-                createTextureImageView();
-                createTextureSampler();
+        createCommandPool();
 
-                loadModel();
-                createVertexBuffer();
-                createIndexBuffer();
+        createDepthResources();
+        createFramebuffers();
 
-                createUniformBuffers();
-                createDescriptorPool();
-                createDescriptorSetLayout();
-                createDescriptorSets();
+        createTextureImage();
+        createTextureImageView();
+        createTextureSampler();
 
-                createGraphicsPipeline();
+        loadModel();
+        createVertexBuffer();
+        createIndexBuffer();
 
-                createCommandBuffer();
+        createUniformBuffers();
+        createDescriptorPool();
+        createDescriptorSetLayout();
+        createDescriptorSets();
 
-                createSyncObjects();
-            }
+        createGraphicsPipeline();
 
-            void VKEngine::RecreateSwapChain() {
-                int width = 0, height = 0;
-                glfwGetFramebufferSize(_window, &width, &height);
-                while (width == 0 || height == 0) {
-                    glfwGetFramebufferSize(_window, &width, &height);
-                    glfwWaitEvents();
-                }
+        createCommandBuffer();
 
-                vkDeviceWaitIdle(_device);
+        createSyncObjects();
+    }
 
-                cleanupSwapChain();
+    void VKEngine::RecreateSwapChain() {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(_window, &width, &height);
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(_window, &width, &height);
+            glfwWaitEvents();
+        }
 
-                createSwapChain();
-                createSwapChainImageViews();
-                createDepthResources();
-                createFramebuffers();
-            }
+        vkDeviceWaitIdle(_device);
 
-            void VKEngine::DrawFrame(Camera camera, std::vector<RenderObject>* renderObjects) {
-                FrameData currentFrameData = GetCurrentFrameData();
-                vkWaitForFences(_device, 1, &currentFrameData.renderFence, VK_TRUE, UINT64_MAX);
+        cleanupSwapChain();
 
-                uint32_t imageIndex;
-                VkResult result = vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, currentFrameData.presentSemaphore, VK_NULL_HANDLE, &imageIndex);
+        createSwapChain();
+        createSwapChainImageViews();
+        createDepthResources();
+        createFramebuffers();
+    }
 
-                if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-                    RecreateSwapChain();
-                    return;
-                }
-                else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-                    throw std::runtime_error("failed to acquire swap chain image!");
-                }
+    void VKEngine::DrawFrame(Camera camera, std::vector<RenderObject>* renderObjects) {
+        FrameData currentFrameData = GetCurrentFrameData();
+        vkWaitForFences(_device, 1, &currentFrameData.renderFence, VK_TRUE, UINT64_MAX);
 
-                updateUniformBuffers(camera, renderObjects);
+        uint32_t imageIndex;
+        VkResult result = vkAcquireNextImageKHR(_device, _swapChain, UINT64_MAX, currentFrameData.presentSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-                vkResetFences(_device, 1, &currentFrameData.renderFence);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            RecreateSwapChain();
+            return;
+        }
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            throw std::runtime_error("failed to acquire swap chain image!");
+        }
 
-                vkResetCommandBuffer(currentFrameData.commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-                recordCommandBuffer(currentFrameData.commandBuffer, imageIndex, renderObjects);
+        updateUniformBuffers(camera, renderObjects);
 
-                VkSubmitInfo submitInfo{};
-                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        vkResetFences(_device, 1, &currentFrameData.renderFence);
 
-                VkSemaphore waitSemaphores[] = { currentFrameData.presentSemaphore };
-                VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-                submitInfo.waitSemaphoreCount = 1;
-                submitInfo.pWaitSemaphores = waitSemaphores;
-                submitInfo.pWaitDstStageMask = waitStages;
+        vkResetCommandBuffer(currentFrameData.commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
+        recordCommandBuffer(currentFrameData.commandBuffer, imageIndex, renderObjects);
 
-                submitInfo.commandBufferCount = 1;
-                submitInfo.pCommandBuffers = &currentFrameData.commandBuffer;
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-                VkSemaphore signalSemaphores[] = { currentFrameData.renderSemaphore };
-                submitInfo.signalSemaphoreCount = 1;
-                submitInfo.pSignalSemaphores = signalSemaphores;
+        VkSemaphore waitSemaphores[] = { currentFrameData.presentSemaphore };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
 
-                VkResult queueSubmitResult = vkQueueSubmit(_graphicsQueue, 1, &submitInfo, currentFrameData.renderFence);
-                if (queueSubmitResult != VK_SUCCESS) {
-                    throw std::runtime_error("failed to submit draw command buffer!");
-                }
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &currentFrameData.commandBuffer;
 
-                VkPresentInfoKHR presentInfo{};
-                presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        VkSemaphore signalSemaphores[] = { currentFrameData.renderSemaphore };
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
 
-                presentInfo.waitSemaphoreCount = 1;
-                presentInfo.pWaitSemaphores = signalSemaphores;
+        VkResult queueSubmitResult = vkQueueSubmit(_graphicsQueue, 1, &submitInfo, currentFrameData.renderFence);
+        if (queueSubmitResult != VK_SUCCESS) {
+            throw std::runtime_error("failed to submit draw command buffer!");
+        }
 
-                VkSwapchainKHR swapChains[] = { _swapChain };
-                presentInfo.swapchainCount = 1;
-                presentInfo.pSwapchains = swapChains;
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-                presentInfo.pImageIndices = &imageIndex;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
 
-                result = vkQueuePresentKHR(_presentQueue, &presentInfo);
+        VkSwapchainKHR swapChains[] = { _swapChain };
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
 
-                if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebufferResized) {
-                    _framebufferResized = false;
-                    RecreateSwapChain();
-                }
-                else if (result != VK_SUCCESS) {
-                    throw std::runtime_error("failed to present swap chain image!");
-                }
+        presentInfo.pImageIndices = &imageIndex;
 
-                _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-            }
+        result = vkQueuePresentKHR(_presentQueue, &presentInfo);
 
-            void VKEngine::WaitRendererIdle() {
-                vkDeviceWaitIdle(_device);
-            }
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebufferResized) {
+            _framebufferResized = false;
+            RecreateSwapChain();
+        }
+        else if (result != VK_SUCCESS) {
+            throw std::runtime_error("failed to present swap chain image!");
+        }
 
-            void VKEngine::SetFrameBufferResized(bool wasResized) {
-                _framebufferResized = wasResized;
-            }
+        _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    }
 
-            void VKEngine::Cleanup() {
-                vkWaitForFences(_device, 1, &GetCurrentFrameData().renderFence, true, 1000000000);
+    void VKEngine::WaitRendererIdle() {
+        vkDeviceWaitIdle(_device);
+    }
 
-                cleanupSwapChain();
+    void VKEngine::SetFrameBufferResized(bool wasResized) {
+        _framebufferResized = wasResized;
+    }
 
-                vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
-                vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
-                vkDestroyRenderPass(_device, _renderPass, nullptr);
+    void VKEngine::Cleanup() {
+        //vkWaitForFences(_device, 1, &GetCurrentFrameData().renderFence, true, 1000000000);
 
-                for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                    _cameraUniformBufferMemory[i].DestroyBufferObject(_device);
-                    _renderOjbectsDynamicUniformBufferMemory[i].DestroyBufferObject(_device);
-                }
+        cleanupSwapChain();
 
-                vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
+        vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
+        vkDestroyRenderPass(_device, _renderPass, nullptr);
 
-                vkDestroyBuffer(_device, _indexBuffer, nullptr);
-                vkFreeMemory(_device, _indexBufferMemory, nullptr);
-                vkDestroyBuffer(_device, _vertexBuffer, nullptr);
-                vkFreeMemory(_device, _vertexBufferMemory, nullptr);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            _cameraUniformBufferMemory[i].DestroyBufferObject(_device);
+            _renderOjbectsDynamicUniformBufferMemory[i].DestroyBufferObject(_device);
+        }
 
-                vkDestroySampler(_device, _textureSampler, nullptr);
-                vkDestroyImageView(_device, _textureImageView, nullptr);
-                vkDestroyImage(_device, _textureImage, nullptr);
-                vkFreeMemory(_device, _textureImageMemory, nullptr);
+        vkDestroyDescriptorPool(_device, _descriptorPool, nullptr);
 
-                vkDestroyImageView(_device, _depthImageView, nullptr);
-                vkDestroyImage(_device, _depthImage, nullptr);
-                vkFreeMemory(_device, _depthImageMemory, nullptr);
+        vkDestroyBuffer(_device, _indexBuffer, nullptr);
+        vkFreeMemory(_device, _indexBufferMemory, nullptr);
+        vkDestroyBuffer(_device, _vertexBuffer, nullptr);
+        vkFreeMemory(_device, _vertexBufferMemory, nullptr);
 
-                vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
+        vkDestroySampler(_device, _textureSampler, nullptr);
+        vkDestroyImageView(_device, _textureImageView, nullptr);
+        vkDestroyImage(_device, _textureImage, nullptr);
+        vkFreeMemory(_device, _textureImageMemory, nullptr);
 
-                for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                    _frames[i].DestroyFrameData(_device);
-                }
+        vkDestroyImageView(_device, _depthImageView, nullptr);
+        vkDestroyImage(_device, _depthImage, nullptr);
+        vkFreeMemory(_device, _depthImageMemory, nullptr);
 
-                vkDestroyCommandPool(_device, _commandPool, nullptr);
-                vkDestroyCommandPool(_device, _transferCommandPool, nullptr);
+        vkDestroyDescriptorSetLayout(_device, _descriptorSetLayout, nullptr);
 
-                //delete[] _swapChainFramebuffers;
-                //std::vector<VkFramebuffer>().swap(_swapChainFramebuffers);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            _frames[i].DestroyFrameData(_device);
+        }
 
-                vkDestroyDevice(_device, nullptr);
 
-                if (enableValidationLayers) {
-                    DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
-                }
+        vkDestroyCommandPool(_device, _commandPool, nullptr);
+        vkDestroyCommandPool(_device, _transferCommandPool, nullptr);
 
-                vkDestroySurfaceKHR(_instance, _surface, nullptr);
-                vkDestroyInstance(_instance, nullptr);
-            }
+        //delete[] _swapChainFramebuffers;
+        //std::vector<VkFramebuffer>().swap(_swapChainFramebuffers);
 
-            float VKEngine::GetSwapChainAspectRatio() {
-                return _swapChainExtent.width / (float)_swapChainExtent.height;
-            }
+        vkDestroyDevice(_device, nullptr);
+
+        if (enableValidationLayers) {
+            DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
+        }
+
+        vkDestroySurfaceKHR(_instance, _surface, nullptr);
+        vkDestroyInstance(_instance, nullptr);
+    }
+
+    float VKEngine::GetSwapChainAspectRatio() {
+        return _swapChainExtent.width / (float)_swapChainExtent.height;
+    }
 #pragma endregion
  
 #pragma region Init
@@ -760,49 +769,37 @@ namespace PenguinEngine {
                 std::vector<VkImage> swapChainImages(imageCount);
                 vkGetSwapchainImagesKHR(_device, _swapChain, &imageCount, swapChainImages.data());
 
-                _swapChainData.resize(imageCount);
-                for (int i = 0; i < imageCount; i++) {
-                    AllocatedImage allocImage{};
-                    allocImage.image = swapChainImages[i];
+                //_swapChainData.resize(imageCount);
+                for (int i = 0; i < SWAPCHAIN_MAX_SIZE; i++) {
+                    if (i < imageCount) {
+                        AllocatedImage allocImage{};
+                        allocImage.image = swapChainImages[i];
+                        allocImage.useMipMap = false;
 
-                    SwapChainData swapChainData{};
-                    swapChainData.allocatedImage = allocImage;
-                    _swapChainData[i] = swapChainData;
+                        SwapChainData swapChainData{};
+                        swapChainData.allocatedImage = allocImage;
+                        _swapChainData[i] = swapChainData;
+                    }
+                    _swapChainData[i].wasInitialized = i < imageCount;
                 }
 
+                _swapChainSize = imageCount;
                 _swapChainImageFormat = surfaceFormat.format;
                 _swapChainExtent = extent;
             }
 
             void VKEngine::createSwapChainImageViews() {
-                //_swapChainImageViews.resize(_swapChainImages.size());
-
-                for (size_t i = 0; i < _swapChainData.size(); i++) {
+                //for (size_t i = 0; i < _swapChainData.size(); i++) {
+                for (size_t i = 0; i < _swapChainSize; i++) {
                     //_swapChainImageViews[i] = createImageView(_swapChainImages[i], _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
                     _swapChainData[i].allocatedImage.imageView = createImageView(_swapChainData[i].allocatedImage.image, _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
                 }
             }
 
             void VKEngine::cleanupSwapChain() {
-                /*for (auto framebuffer : _swapChainFramebuffers) {
-                    vkDestroyFramebuffer(_device, framebuffer, nullptr);
-                }*/
-
-                //int vecSize = 5;
-                //for (int i = vecSize - 1; i >= 0; i--) {
-                //    if (_swapChainFramebuffers[i] == NULL)
-                //        continue;
-                //    vkDestroyFramebuffer(_device, _swapChainFramebuffers[i], nullptr);
-                //    //delete _swapChainFramebuffers[i];
-                //    //_swapChainFramebuffers.pop_back();
-                //}
-
-                /*for (auto imageView : _swapChainImageViews) {
-                    vkDestroyImageView(_device, imageView, nullptr);
-                }*/
-
                 for (auto swapChainData : _swapChainData) {
-                    swapChainData.DestroySwapChainData(_device, _allocator);
+                    if(swapChainData.wasInitialized)
+                        swapChainData.DestroySwapChainData(_device);
                 }
 
                 vkDestroySwapchainKHR(_device, _swapChain, nullptr);
@@ -1156,7 +1153,8 @@ namespace PenguinEngine {
                 //_swapChainFramebuffers.resize(_swapChainImageViews.size());
                 //_swapChainFramebuffers = std::make_unique<VkFramebuffer[]>(_swapChainImageViews.size());
 
-                for (size_t i = 0; i < _swapChainData.size(); i++) {
+                //for (size_t i = 0; i < _swapChainData.size(); i++) {
+                for (size_t i = 0; i < _swapChainSize; i++) {
                     std::array<VkImageView, 2> attachments = {
                         //_swapChainImageViews[i],
                         _swapChainData[i].allocatedImage.imageView,
