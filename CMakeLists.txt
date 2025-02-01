@@ -26,10 +26,15 @@ FetchContent_Declare(tinygltf
     GIT_TAG release
     GIT_PROGRESS ON)
 
+#FetchContent_Declare(vma
+#    GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+#    GIT_TAG master
+#    GIT_PROGRESS ON)
 
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(tinygltf)
+#FetchContent_MakeAvailable(vma)
 
 project(penguin-engine LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)

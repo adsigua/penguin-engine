@@ -14,7 +14,7 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
-//#include "VMAUsage.h"
+#include "VMAUsage.h"
 //#include "vk_mem_alloc.h"
 
 #include "VKTypes.h"
@@ -74,7 +74,7 @@ namespace Graphics {
         VkDebugUtilsMessengerEXT _debugMessenger;
         VkInstance _instance;
 
-        //VmaAllocator _allocator;
+        VmaAllocator _allocator;
             
         VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
         VkDevice _device;
@@ -163,6 +163,8 @@ namespace Graphics {
         void createSurface();
 
         void createSurfaceVulkan(GLFWwindow* window);
+
+        void initVMA();
 #pragma endregion
 
 #pragma region Validation Layers

@@ -630,6 +630,11 @@ namespace Graphics {
                     throw std::runtime_error("failed to create window surface!");
                 }
             }
+
+            void VKEngine::initVMA() {
+                
+            }
+
 #pragma endregion
 
 #pragma region Validation Layers

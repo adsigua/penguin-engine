@@ -76,7 +76,7 @@ namespace Graphics {
     struct AllocatedImage {
         VkImage image;
         VkImageView imageView;
-        //VmaAllocation allocation;
+        VmaAllocation allocation;
         VkExtent2D imageExtent;
         VkFormat imageFormat;
         VkDeviceMemory imageMemory;
