@@ -44,18 +44,14 @@ namespace Graphics {
         }
     };
 
-    struct UniformBufferMemory {
-        VkBuffer uniformBuffer;
-        VkDeviceMemory deviceMemory;
-        void* uniformBuffersMapped;
-        VkDeviceSize alignmentSize;
-        VkDeviceSize bufferSize;
-
-        void DestroyBufferObject(VkDevice device) {
-            vkDestroyBuffer(device, uniformBuffer, nullptr);
-            vkFreeMemory(device, deviceMemory, nullptr);
-        }
-    };
+    //struct UniformBufferMemory {
+    //    //VkBuffer uniformBuffer;
+    //    //VmaAllocation allocation;
+    //    //VmaAllocationInfo allocationInfo;
+    //    //VkDeviceMemory deviceMemory;
+    //    //void* uniformBuffersMapped;
+    //    BufferObject bufferObject;
+    //};
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -73,21 +69,34 @@ namespace Graphics {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
+    struct BufferObject {
+        VkBuffer buffer;
+        VmaAllocation allocation;
+        VmaAllocationInfo allocationInfo;
+        VkDeviceSize alignmentSize;
+
+        void DestroyBufferObject(VmaAllocator allocator) {
+            //vkDestroyBuffer(device, uniformBuffer, nullptr);
+            //vkFreeMemory(device, deviceMemory, nullptr);
+            vmaDestroyBuffer(allocator, buffer, allocation);
+        }
+    };
+
     struct AllocatedImage {
         VkImage image;
         VkImageView imageView;
+
         VmaAllocation allocation;
+        VmaAllocationInfo allocationInfo;
+
         VkExtent2D imageExtent;
         VkFormat imageFormat;
-        VkDeviceMemory imageMemory;
         bool useMipMap;
         uint32_t mipLevels;
 
-        void DestroyAllocatedImage(VkDevice device) {
-            //vmaDestroyImage(allocator, image, allocation);
-            vkDestroyImage(device, image, nullptr);
-            vkFreeMemory(device, imageMemory, nullptr);
+        void DestroyAllocatedImage(VkDevice device, VmaAllocator allocator) {
             vkDestroyImageView(device, imageView, nullptr);
+            vmaDestroyImage(allocator, image, allocation);
         }
     };
 

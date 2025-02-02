@@ -103,11 +103,14 @@ namespace Graphics {
         FrameData _frames[MAX_FRAMES_IN_FLIGHT];
 
         SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
+        //std::vector<SwapChainData> _swapChainData;
 
-        VkBuffer _vertexBuffer;
-        VkDeviceMemory _vertexBufferMemory;
-        VkBuffer _indexBuffer;
-        VkDeviceMemory _indexBufferMemory;
+        //VkBuffer _vertexBuffer;
+        //VkDeviceMemory _vertexBufferMemory;
+        //VkBuffer _indexBuffer;
+        //VkDeviceMemory _indexBufferMemory;
+        BufferObject _vertexBufferObject;
+        BufferObject _indexBufferObject;
 
         VkDescriptorPool _descriptorPool;
         VkDescriptorSetLayout _descriptorSetLayout;
@@ -116,17 +119,17 @@ namespace Graphics {
         VkDescriptorSet _descriptorSets[MAX_FRAMES_IN_FLIGHT];
         VkDescriptorSet _objectDescriptorSets[MAX_FRAMES_IN_FLIGHT];
 
-        UniformBufferMemory _cameraUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
-        UniformBufferMemory _renderOjbectsDynamicUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
+        BufferObject _cameraUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
+        BufferObject _renderOjbectsDynamicUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
 
-        VkImage _textureImage;
-        VkDeviceMemory _textureImageMemory;
-        VkImageView _textureImageView;
         VkSampler _textureSampler;
 
-        VkImage _depthImage;
-        VkDeviceMemory _depthImageMemory;
-        VkImageView _depthImageView;
+        AllocatedImage _modelTextureImage;
+        AllocatedImage _depthTextureImage;
+
+        //VkImage _depthImage;
+        //VkDeviceMemory _depthImageMemory;
+        //VkImageView _depthImageView;
 
         //std::vector<SwapChainData> _swapChainData;
         //std::vector<VkFramebuffer> _swapChainFrameBuffers;
@@ -193,11 +196,15 @@ namespace Graphics {
 #pragma region Buffers
         VkDeviceSize getAlignment(VkDeviceSize bufferSize, VkDeviceSize minBufferAlignment);
 
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-
+        //void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo);
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, BufferObject& bufferObject);
+        
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
         void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+        void createAndFillBuffer(VkDeviceSize size, VkBufferUsageFlags usage, const void* data, BufferObject& bufferObject);
 
         VkCommandBuffer beginSingleTimeCommands();
 
@@ -242,8 +249,9 @@ namespace Graphics {
 #pragma region Textures
         void createTextureImage();
 
-        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage& allocatedImage);
+        //void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        
         void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
         void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);

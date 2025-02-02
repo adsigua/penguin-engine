@@ -30,8 +30,8 @@ private:
 
     std::vector<RenderObject> _renderedObjects;
 
-    const uint16_t SPAWN_COUNT = 1;
-    const float SPAWN_SIZE = 0.0f;
+    const uint16_t SPAWN_COUNT = 2;
+    const float SPAWN_SIZE = 2.0f;
 
     Camera camera;
     RenderObject squareObject;
@@ -55,7 +55,7 @@ private:
 
     void createObjects() {
         camera = Camera(75.0f, renderer.GetSwapChainAspectRatio(), 0.1f, 200.0f);
-        camera.transform.LookAt(glm::vec3(0.0f, 1.0f, 2.0f), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+        camera.transform.LookAt(glm::vec3(0.0f, 1.0f, 5.0f), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
 
         _renderedObjects.resize(SPAWN_COUNT);
         for (int i = 0; i < _renderedObjects.size(); i++) {
