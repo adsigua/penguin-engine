@@ -90,7 +90,7 @@ namespace Graphics {
         VmaAllocationInfo allocationInfo;
 
         VkExtent2D imageExtent;
-        VkFormat imageFormat;
+        //VkFormat imageFormat;
         bool useMipMap;
         uint32_t mipLevels;
 
