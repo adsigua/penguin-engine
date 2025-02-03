@@ -1575,15 +1575,16 @@ namespace Graphics {
                 //void* data;
                 //vkMapMemory(_device, stagingBufferMemory, 0, imageSize, 0, &data);
                 //vkUnmapMemory(_device, stagingBufferMemory);
+                memcpy(stagingAllocationInfo.pMappedData, pixels, static_cast<size_t>(imageSize));
 
                 stbi_image_free(pixels);
 
                 _modelTextureImage.useMipMap = false;
-                //_modelTextureImage.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-                _modelTextureImage.mipLevels = 1;
+                _modelTextureImage.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+                //_modelTextureImage.mipLevels = 1;
 
-                //createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, _modelTextureImage);
-                createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, _modelTextureImage);
+                createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, _modelTextureImage);
+                //createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, _modelTextureImage);
                 
                 transitionImageLayout(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, _modelTextureImage.mipLevels);
                 copyBufferToImage(stagingBuffer, _modelTextureImage.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
@@ -1591,6 +1592,15 @@ namespace Graphics {
                 transitionImageLayout(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, _modelTextureImage.mipLevels);
 
                 vmaDestroyBuffer(_allocator, stagingBuffer, stagingAllocation);
+
+
+
+                //createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _modelTextureImage);
+
+                //transitionImageLayout(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                //copyBufferToImage(stagingBuffer, _modelTextureImage.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+
+                //transitionImageLayout(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                 //generateMipmaps(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, _modelTextureImage.mipLevels);
             }
@@ -1725,7 +1735,7 @@ namespace Graphics {
 
                 barrier.image = image;
                 barrier.subresourceRange.baseMipLevel = 0;
-                barrier.subresourceRange.levelCount = mipLevels;
+                barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.baseArrayLayer = 0;
                 barrier.subresourceRange.layerCount = 1;
 
@@ -1853,10 +1863,10 @@ namespace Graphics {
                 samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 
                 samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                samplerInfo.minLod = 0.0f; // Optional
-                //samplerInfo.maxLod = static_cast<float>(_modelTextureImage.mipLevels);
-                samplerInfo.maxLod = 0.0f;
-                samplerInfo.mipLodBias = 0.0f; // Optional
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                //samplerInfo.maxLod = 0.0f;
+                samplerInfo.maxLod = static_cast<float>(_modelTextureImage.mipLevels);
 
                 if (vkCreateSampler(_device, &samplerInfo, nullptr, &_textureSampler) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture sampler!");
@@ -1868,7 +1878,6 @@ namespace Graphics {
 
                 _depthTextureImage.useMipMap = false;
                 createImage(_swapChainExtent.width, _swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, _depthTextureImage);
-                
                 createImageView(_depthTextureImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
                 transitionImageLayout(_depthTextureImage.image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
