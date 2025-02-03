@@ -14,7 +14,6 @@ The goal of this project is for me to expand my knowledge in game dev, specially
 + Entity Component System  
   
 #### Smaller but important to-dos:
-+ Switch project to CMake rather than Visual Studio  
 + Clean up project in general  
 + Make a better readme  
   
