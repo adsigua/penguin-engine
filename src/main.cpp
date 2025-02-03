@@ -30,8 +30,8 @@ private:
 
     std::vector<RenderObject> _renderedObjects;
 
-    const uint16_t SPAWN_COUNT = 2;
-    const float SPAWN_SIZE = 2.0f;
+    const uint16_t SPAWN_COUNT = 5;
+    const float SPAWN_SIZE = 5.0f;
 
     Camera camera;
     RenderObject squareObject;
@@ -50,8 +50,6 @@ private:
         auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
         app->renderer.SetFrameBufferResized(true);
     }
-
-
 
     void createObjects() {
         camera = Camera(75.0f, renderer.GetSwapChainAspectRatio(), 0.1f, 200.0f);
