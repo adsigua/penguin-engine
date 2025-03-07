@@ -7,6 +7,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/constants.hpp>
 
 Transform::Transform() {
 	_position = glm::vec3(0, 0, 0);
@@ -24,70 +25,55 @@ Transform::Transform() {
 
 void Transform::SetPosition(glm::vec3 newPos) {
 	_position = newPos;
-	updateTransformComponents();
+	//_localToWorld[3] = glm::vec4(newPos.x, newPos.y, newPos.z, _localToWorld[3][3]);
+	_isDirty = true;
 }
 
 void Transform::SetRotation_Euler(glm::vec3 euler) {
 	_rotationMat = glm::orientate4(euler);
 	_rotationQuat = glm::toQuat(_rotationMat);
-	updateTransformComponents();
+	computeBasisVectors();
+	_isDirty = true;
 }
 
 void Transform::SetRotation_Quat(glm::quat newRot) {
 	_rotationQuat = newRot;
 	_rotationMat = glm::toMat4(newRot);
-	updateTransformComponents();
+	computeBasisVectors();
+	_isDirty = true;
 }
 
 void Transform::SetRotation_Matrix(glm::mat4 newRotMatrix) {
 	_rotationMat = newRotMatrix;
 	_rotationQuat = glm::toQuat(newRotMatrix);
-	updateTransformComponents();
+	computeBasisVectors();
+	_isDirty = true;
 }
 
 void Transform::Rotate(float angleRadians, glm::vec3 axis) {
-	SetRotation_Matrix(glm::rotate(_rotationMat, angleRadians, axis));
+	//glm::mat4 model = glm::translate(_localToWorld, -_position);
+	//model = glm::rotate(model, angleRadians, axis);
+	//model = glm::translate(model, _position);
+	//setLocalToWorldMatrix(model);
+	SetRotation_Matrix(glm::rotate(_localToWorld, angleRadians, axis));
+	//SetRotation_Matrix(glm::rotate(model, angleRadians, axis));
+}
+
+void Transform::Rotate(glm::quat rotation) {
+	SetRotation_Quat(rotation * _rotationQuat);
+}
+
+void Transform::Rotate(glm::vec3 rotation) {
+	SetRotation_Matrix(_rotationMat * glm::orientate4(rotation));
+}
+
+void Transform::Rotate(glm::mat4 rotation) {
+	SetRotation_Matrix(rotation * _rotationMat);
 }
 
 void Transform::SetScale(glm::vec3 newScale) {
 	_scale = newScale;
-	updateTransformComponents();
-}
-
-glm::vec3 Transform::GetPosition() {
-	return _position;
-}
-
-glm::quat Transform::GetRotationQuat() {
-	return _rotationQuat;
-}
-
-glm::mat4 Transform::GetRotationMatrix() {
-	return _rotationMat;
-}
-
-glm::vec3 Transform::GetScale () {
-	return _scale;
-}
-
-glm::vec3 Transform::getForward() {
-	return _forward;
-}
-
-glm::vec3 Transform::getRight() {
-	return _right;
-}
-
-glm::vec3 Transform::getUp() {
-	return _up;
-}
-
-glm::mat4 Transform::getLocalToWorldMatrix() {
-	return _localToWorld;
-}
-
-glm::mat4 Transform::getWorldToLocalMatrix() {
-	return _worldToLocal;
+	_isDirty = true;
 }
 
  void Transform::setLocalToWorldMatrix(glm::mat4 modelMat) {
@@ -96,32 +82,35 @@ glm::mat4 Transform::getWorldToLocalMatrix() {
 	glm::vec4 perspective;
 	glm::decompose(modelMat, _scale, _rotationQuat, _position, skew, perspective);
 	_rotationMat = glm::toMat4(_rotationQuat);
-	_worldToLocal = glm::inverse(_localToWorld);
+	computeBasisVectors();
+	recomputeWorldToLocal();
+ }
 
-	computeDirectionalVectors();
-}
-
- void Transform::updateTransformComponents() {
-	 computeModelMatrices();
-	 computeDirectionalVectors();
-}
-
+ //should be called when _isDirty is true
 void Transform::computeModelMatrices() {
 	glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0), _position);
 	glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0), _scale);;
 	_localToWorld = translateMatrix * _rotationMat * scaleMatrix;
+	recomputeWorldToLocal();
+	_isDirty = false;
+}
+
+void Transform::recomputeWorldToLocal() {
 	_worldToLocal = glm::inverse(_localToWorld);
 }
 
-void Transform::computeDirectionalVectors() {
-	_right = _rotationQuat * glm::vec3(1.0, 0.0, 0.0);
-	_up = _rotationQuat * glm::vec3(0.0, 1.0, 0.0);
-	_forward = _rotationQuat * glm::vec3(0.0, 0.0, 1.0);
+//Call this each time any rotation is changed
+void Transform::computeBasisVectors() {
+	_right = glm::normalize(glm::vec3(_rotationMat[0][0], _rotationMat[1][0], _rotationMat[2][0]));
+	_up = glm::normalize(glm::vec3(_rotationMat[0][1], _rotationMat[1][1], _rotationMat[2][1]));
+	_forward = glm::normalize(glm::vec3(_rotationMat[0][2], _rotationMat[1][2], _rotationMat[2][2]));
+	/*_right = glm::vec3(_rotationMat[0]);
+	_up = glm::vec3(_rotationMat[1]);
+	_forward = glm::vec3(_rotationMat[2]);*/
 }
 
 
 void Transform::RotateAtAxis(glm::vec3 rotationPos, float angleRadians, glm::vec3 rotationAxis) {
-	//glm::vec3 localPos = _worldToLocal * glm::vec4(rotationPos, 1.0);
 	glm::mat4 rotPosLocalMat = glm::translate(glm::mat4(1), rotationPos);
 	glm::mat4 rotPosRotatedMat = glm::rotate(rotPosLocalMat, angleRadians, rotationAxis);
 
@@ -154,14 +143,63 @@ void Transform::LookAt(glm::vec3 eyePos, glm::vec3 targetPosition, glm::vec3 upV
 		rotationX.z, rotationY.z, rotationZ.z, 0.0f, 
 		0.0f, 0.0f, 0.0f, 1.0f);
 
+	glm::mat4 pos(
+		1.0f, 0.0f, 0.0f, eyePos.x,
+		0.0f, 1.0f, 0.0f, eyePos.y,
+		0.0f, 0.0f, 1.0f, eyePos.z,
+		0.0f, 0.0f, 0.0f, 1.0f);
+
 	_position = eyePos;
 	_rotationMat = rotation;
 	_rotationQuat = glm::toQuat(rotation);
 
+	_localToWorld = pos * rotation * glm::scale(glm::mat4(1.0f), _scale);
+	recomputeWorldToLocal();
+
 	_right = rotationX;
 	_up = rotationY;
 	_forward = rotationZ;
+}
 
-	computeModelMatrices();
+glm::vec3 Transform::GetPosition() {
+	return _position;
+}
+
+glm::quat Transform::GetRotationQuat() {
+	return _rotationQuat;
+}
+
+glm::mat4 Transform::GetRotationMatrix() {
+	return _rotationMat;
+}
+
+glm::vec3 Transform::GetScale() {
+	return _scale;
+}
+
+glm::vec3 Transform::getForward() {
+	return _forward;
+}
+
+glm::vec3 Transform::getRight() {
+	return _right;
+}
+
+glm::vec3 Transform::getUp() {
+	return _up;
+}
+
+glm::mat4 Transform::getLocalToWorldMatrix() {
+	if(_isDirty){
+		computeModelMatrices();
+	}
+	return _localToWorld;
+}
+
+glm::mat4 Transform::getWorldToLocalMatrix() {
+	if (_isDirty) {
+		computeModelMatrices();
+	}
+	return _worldToLocal;
 }
 

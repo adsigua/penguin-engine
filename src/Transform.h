@@ -22,6 +22,8 @@ class Transform {
 
 	glm::mat4 _localToWorld;
 	glm::mat4 _worldToLocal;
+
+	bool _isDirty;
 public:
 	Transform();
 
@@ -35,6 +37,9 @@ public:
 	glm::quat GetRotationQuat();
 	glm::mat4 GetRotationMatrix();
 	void Rotate(float angleRadians, glm::vec3 axis);
+	void Rotate(glm::quat);
+	void Rotate(glm::mat4);
+	void Rotate(glm::vec3);
 
 	void SetScale(glm::vec3);
 	glm::vec3 GetScale();
@@ -43,6 +48,7 @@ public:
 	glm::vec3 getRight();
 	glm::vec3 getUp();
 	void computeModelMatrices();
+	void recomputeWorldToLocal();
 
 	void setLocalToWorldMatrix(glm::mat4 modelMat);
 
@@ -55,7 +61,9 @@ public:
 	void LookAt(glm::vec3 eyePos, glm::vec3 position, glm::vec3 upVector);
 
 	void updateTransformComponents();
-	void computeDirectionalVectors();
+	void computeBasisVectors();
 };
+
+
 
 #endif

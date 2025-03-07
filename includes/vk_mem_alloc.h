@@ -9927,7 +9927,7 @@ private:
     bool ComputeDefragmentation_Full(VmaBlockVector& vector);
     bool ComputeDefragmentation_Extensive(VmaBlockVector& vector, size_t index);
 
-    void UpdateVectorStatistics(VmaBlockVector& vector, StateBalanced& state);
+    void UpdateVectorStatistics(VmaBlockVector& vector, StateBalanced& buttonState);
     bool MoveDataToFreeBlocks(VmaSuballocationType currentType,
         VmaBlockVector& vector, size_t firstFreeBlock,
         bool& texturePresent, bool& bufferPresent, bool& otherPresent);
@@ -12152,18 +12152,18 @@ VkResult VmaDefragmentationContext_T::DefragmentPassEnd(VmaDefragmentationPassMo
             m_AlgorithmState != VMA_NULL)
         {
             // Avoid unnecessary tries to allocate when new free block is available
-            StateExtensive& state = reinterpret_cast<StateExtensive*>(m_AlgorithmState)[vectorIndex];
-            if (state.firstFreeBlock != SIZE_MAX)
+            StateExtensive& buttonState = reinterpret_cast<StateExtensive*>(m_AlgorithmState)[vectorIndex];
+            if (buttonState.firstFreeBlock != SIZE_MAX)
             {
                 const size_t diff = prevCount - currentCount;
-                if (state.firstFreeBlock >= diff)
+                if (buttonState.firstFreeBlock >= diff)
                 {
-                    state.firstFreeBlock -= diff;
-                    if (state.firstFreeBlock != 0)
-                        state.firstFreeBlock -= vector->GetBlock(state.firstFreeBlock - 1)->m_pMetadata->IsEmpty();
+                    buttonState.firstFreeBlock -= diff;
+                    if (buttonState.firstFreeBlock != 0)
+                        buttonState.firstFreeBlock -= vector->GetBlock(buttonState.firstFreeBlock - 1)->m_pMetadata->IsEmpty();
                 }
                 else
-                    state.firstFreeBlock = 0;
+                    buttonState.firstFreeBlock = 0;
             }
         }
     }
@@ -12191,8 +12191,8 @@ VkResult VmaDefragmentationContext_T::DefragmentPassEnd(VmaDefragmentationPassMo
                     // Move to the start of free blocks range
                     for (const FragmentedBlock& block : immovableBlocks)
                     {
-                        StateExtensive& state = reinterpret_cast<StateExtensive*>(m_AlgorithmState)[block.data];
-                        if (state.operation != StateExtensive::Operation::Cleanup)
+                        StateExtensive& buttonState = reinterpret_cast<StateExtensive*>(m_AlgorithmState)[block.data];
+                        if (buttonState.operation != StateExtensive::Operation::Cleanup)
                         {
                             VmaBlockVector* vector = m_pBlockVectors[block.data];
                             VmaMutexLockWrite lock(vector->GetMutex(), vector->GetAllocator()->m_UseMutex);
@@ -12202,14 +12202,14 @@ VkResult VmaDefragmentationContext_T::DefragmentPassEnd(VmaDefragmentationPassMo
                                 if (vector->GetBlock(i) == block.block)
                                 {
                                     std::swap(vector->m_Blocks[i], vector->m_Blocks[vector->GetBlockCount() - ++m_ImmovableBlockCount]);
-                                    if (state.firstFreeBlock != SIZE_MAX)
+                                    if (buttonState.firstFreeBlock != SIZE_MAX)
                                     {
-                                        if (i + 1 < state.firstFreeBlock)
+                                        if (i + 1 < buttonState.firstFreeBlock)
                                         {
-                                            if (state.firstFreeBlock > 1)
-                                                std::swap(vector->m_Blocks[i], vector->m_Blocks[--state.firstFreeBlock]);
+                                            if (buttonState.firstFreeBlock > 1)
+                                                std::swap(vector->m_Blocks[i], vector->m_Blocks[--buttonState.firstFreeBlock]);
                                             else
-                                                --state.firstFreeBlock;
+                                                --buttonState.firstFreeBlock;
                                         }
                                     }
                                     swapped = true;
@@ -12795,12 +12795,12 @@ bool VmaDefragmentationContext_T::ComputeDefragmentation_Extensive(VmaBlockVecto
     return false;
 }
 
-void VmaDefragmentationContext_T::UpdateVectorStatistics(VmaBlockVector& vector, StateBalanced& state)
+void VmaDefragmentationContext_T::UpdateVectorStatistics(VmaBlockVector& vector, StateBalanced& buttonState)
 {
     size_t allocCount = 0;
     size_t freeCount = 0;
-    state.avgFreeSize = 0;
-    state.avgAllocSize = 0;
+    buttonState.avgFreeSize = 0;
+    buttonState.avgAllocSize = 0;
 
     for (size_t i = 0; i < vector.GetBlockCount(); ++i)
     {
@@ -12808,12 +12808,12 @@ void VmaDefragmentationContext_T::UpdateVectorStatistics(VmaBlockVector& vector,
 
         allocCount += metadata->GetAllocationCount();
         freeCount += metadata->GetFreeRegionsCount();
-        state.avgFreeSize += metadata->GetSumFreeSize();
-        state.avgAllocSize += metadata->GetSize();
+        buttonState.avgFreeSize += metadata->GetSumFreeSize();
+        buttonState.avgAllocSize += metadata->GetSize();
     }
 
-    state.avgAllocSize = (state.avgAllocSize - state.avgFreeSize) / allocCount;
-    state.avgFreeSize /= freeCount;
+    buttonState.avgAllocSize = (buttonState.avgAllocSize - buttonState.avgFreeSize) / allocCount;
+    buttonState.avgFreeSize /= freeCount;
 }
 
 bool VmaDefragmentationContext_T::MoveDataToFreeBlocks(VmaSuballocationType currentType,

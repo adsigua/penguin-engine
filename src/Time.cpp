@@ -8,13 +8,13 @@ namespace PenguinEngine {
 
 	void Time::Init() {
 		_startTime = std::chrono::high_resolution_clock::now();
-		_time = std::chrono::duration<float, std::chrono::seconds::period>(_startTime - _startTime).count();
+		_time = std::chrono::duration<float, std::chrono::milliseconds::period>(_startTime - _startTime).count();
 	}
 
 	void Time::Tick() {
 		_prevTime = _time;
 		auto currentTime = std::chrono::high_resolution_clock::now();
-		_time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - _startTime).count();
+		_time = std::chrono::duration<float, std::chrono::milliseconds::period>(currentTime - _startTime).count();
 		_deltaTime = _time - _prevTime;
 	}
 
@@ -22,7 +22,11 @@ namespace PenguinEngine {
 		return _time;
 	}
 
+	float Time::getTimeInSec() {
+		return _time / 1000;
+	}
+
 	float Time::getDeltaTime() {
-		return _deltaTime;
+		return _deltaTime / 1000;
 	}
 }

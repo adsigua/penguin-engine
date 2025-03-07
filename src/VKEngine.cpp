@@ -470,28 +470,28 @@ namespace Graphics {
         vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
         //// Use an ordered map to automatically sort candidates by increasing score
-        //std::multimap<int, VkPhysicalDevice> candidates;
+        std::multimap<int, VkPhysicalDevice> candidates;
         ////std::cout << "devices found:\n";
 
-        //for (const auto& device : devices) {
-        //    int score = rateDeviceSuitability(device);
-        //    candidates.insert(std::make_pair(score, device));
-        //}
-
-        //// Check if the best candidate is suitable at all
-        //if (candidates.rbegin()->first > 0) {
-        //    physicalDevice = candidates.rbegin()->second;
-        //}
-        //else {
-        //    throw std::runtime_error("failed to find a suitable GPU!");
-        //}
-
         for (const auto& device : devices) {
+            int score = rateDeviceSuitability(device);
+            candidates.insert(std::make_pair(score, device));
+        }
+
+        // Check if the best candidate is suitable at all
+        if (candidates.rbegin()->first > 0) {
+            _physicalDevice = candidates.rbegin()->second;
+        }
+        else {
+            throw std::runtime_error("failed to find a suitable GPU!");
+        }
+
+        /*for (const auto& device : devices) {
             if (isDeviceSuitable(device)) {
                 _physicalDevice = device;
                 break;
             }
-        }
+        }*/
 
         if (_physicalDevice == VK_NULL_HANDLE) {
             throw std::runtime_error("failed to find a suitable GPU!");
@@ -502,7 +502,6 @@ namespace Graphics {
 
     bool VKEngine::isDeviceSuitable(VkPhysicalDevice device) {
         QueueFamilyIndices indices = findQueueFamilies(device);
-
         bool extensionsSupported = checkDeviceExtensionSupport(device);
 
         bool swapChainAdequate = false;
@@ -538,6 +537,15 @@ namespace Graphics {
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+        
+        QueueFamilyIndices indices = findQueueFamilies(device);
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+        bool swapChainAdequate = false;
+        if (extensionsSupported) {
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
 
         //std::cout << '\t' << deviceProperties.deviceName << '\n';
 
@@ -551,10 +559,12 @@ namespace Graphics {
         // Maximum possible size of textures affects graphics quality
         score += deviceProperties.limits.maxImageDimension2D;
 
+        bool minimumReq = indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.samplerAnisotropy;
+
         //// Application can't function without geometry shaders
-        //if (!deviceFeatures.geometryShader) {
-        //    return 0;
-        //}
+        if (!minimumReq) {
+            return 0;
+        }
 
         return score;
     }
@@ -674,7 +684,8 @@ namespace Graphics {
             void VKEngine::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
                 createInfo = {};
                 createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-                createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+                //createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+                createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT  ;
                 createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
                 createInfo.pfnUserCallback = debugCallback;
             }
@@ -1579,7 +1590,7 @@ namespace Graphics {
 
                 stbi_image_free(pixels);
 
-                _modelTextureImage.useMipMap = false;
+                _modelTextureImage.useMipMap = true;
                 _modelTextureImage.mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
                 //_modelTextureImage.mipLevels = 1;
 
@@ -1602,7 +1613,7 @@ namespace Graphics {
 
                 //transitionImageLayout(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-                //generateMipmaps(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, _modelTextureImage.mipLevels);
+                generateMipmaps(_modelTextureImage.image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, _modelTextureImage.mipLevels);
             }
 
             void  VKEngine::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
@@ -1865,6 +1876,7 @@ namespace Graphics {
                 samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
                 samplerInfo.mipLodBias = 0.0f;
                 samplerInfo.minLod = 0.0f;
+                // samplerInfo.minLod = static_cast<float>(_modelTextureImage.mipLevels);
                 //samplerInfo.maxLod = 0.0f;
                 samplerInfo.maxLod = static_cast<float>(_modelTextureImage.mipLevels);
 

@@ -13,6 +13,8 @@ namespace PenguinEngine {
 
 		static float getTime();
 
+		static float getTimeInSec();
+
 		static float getDeltaTime();
 
 		Time() = delete;
