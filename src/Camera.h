@@ -22,9 +22,6 @@ const glm::mat4 flipMat = glm::mat4(
 	0.0f, 0.0f, 0.0f, 1.0f		//col 3
 );
 
-
-
-
 class Camera : public TransformObject {
 public:
 	float fov;
@@ -48,16 +45,18 @@ public:
 	}
 
 	void ResetCamera(bool faceNegativeZ = true) {
+		transform.SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+		transform.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 		if (faceNegativeZ) {
-			transform.setLocalToWorldMatrix(flipMat);
+			transform.SetRotation_Euler(glm::vec3(0.0f, glm::radians(180.0f), 0.0f));
 		}
 		else {
-			transform.setLocalToWorldMatrix(glm::mat4(1.0f));
+			transform.SetRotation_Euler(glm::vec3(0.0f, 0.0f, 0.0f));
 		}
 	}
 
 	glm::mat4 GetViewMatrix() {
-		glm::mat4 glmView = glm::lookAt(transform.GetPosition(), transform.GetPosition() - transform.getForward(), transform.getUp());
+		glm::mat4 glmView = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.getForward(), transform.getUp());
 		return glmView;
 	}
 

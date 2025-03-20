@@ -29,9 +29,6 @@ struct MouseInput {
 
 class HelloTriangleApplication {
 public:
-    /*HelloTriangleApplication() {
-        
-    }*/
 
     void run() {
         initWindow();
@@ -80,7 +77,7 @@ private:
 
     std::vector<RenderObject> _renderedObjects;
 
-    const uint16_t SPAWN_COUNT = 1;
+    const uint16_t SPAWN_COUNT = 2;
     const float SPAWN_SIZE = 3.0f;
     const float CAMERA_DISTANCE = 5.0f;
 
@@ -118,10 +115,44 @@ private:
         glfwGetWindowSize(window, &width, &height);
         windowSize = glm::vec2(width, height);
 
-        glm::mat4 someMat = glm::mat4(1.0f);
-        std::cout << "mat" << glm::to_string(someMat) << std::endl;
-        someMat = glm::translate(someMat, glm::vec3(1, 2, 3));
-        std::cout << "mat" << glm::to_string(someMat) << std::endl;
+        /*glm::mat4 someMat = glm::mat4(1.0f);
+        std::cout << "init" << GetMatrixString(someMat) << std::endl << std::endl;
+        glm::vec3 pos = glm::vec3(1.0f, 0.0f, 0.0f);
+        someMat = glm::translate(someMat, pos);
+        std::cout << "translate " << glm::to_string(pos) << GetMatrixString(someMat) << std::endl << std::endl;
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        std::cout << "rotate before pos" << GetMatrixString(someMat * rotation) << std::endl << std::endl;
+        std::cout << "rotate after pos" << GetMatrixString(rotation * someMat) << std::endl << std::endl;
+        glm::mat4 lastMat = someMat * rotation;
+        glm::mat4 secondRot = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));;
+
+        std::cout << "last mat negate using glm::translate" << GetMatrixString(glm::translate(lastMat, -pos)) << std::endl << std::endl;
+        glm::mat4 secondMat = glm::mat4(lastMat);
+        glm::vec3 translation = glm::vec3(secondMat[3][0], secondMat[3][1], secondMat[3][2]) - pos;
+
+        secondMat[3] -= glm::vec4(pos, 0.0f);
+        std::cout << "last mat negate using array modif" << GetMatrixString(secondMat) << std::endl << std::endl;
+        secondMat = secondRot * secondMat;
+        glm::vec3 newTranslation = glm::vec3(secondMat[3][0], secondMat[3][1], secondMat[3][2]) + pos;
+        secondMat[3] += glm::vec4(pos, 0.0f);;
+
+        std::cout << "second rot before pos" << GetMatrixString(someMat * secondRot * rotation) << std::endl << std::endl;
+        std::cout << "second rot manual remove translate, rotate then translate again" << GetMatrixString(secondMat) << std::endl << std::endl;
+        
+        std::cout << std::endl << std::endl << "view matrix:" << std::endl;
+        glm::mat4 lookAt = glm::lookAt(pos, pos - glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        glm::vec4 samplePos = glm::vec4(2.0f, 0.0f, 0.0f, 1.0f);
+        std::cout << "lookAt from pos to x=1.0f" << GetMatrixString(lookAt) << std::endl << "translated pos" << glm::to_string(lookAt * samplePos) << std::endl;
+        glm::mat4 invTrans = glm::translate(glm::mat4(1.0f), -pos);
+        glm::mat4 invRot = glm::transpose(rotation);
+        std::cout << "inv cam matrix" << GetMatrixString(invRot * invTrans) << std::endl << "translated pos" << glm::to_string(invRot * invTrans * samplePos) << std::endl << std::endl;
+        
+        glm::mat4 newMat = glm::translate(glm::mat4(1.0f), pos) * rotation;
+        std::cout << "transform matrix" << GetMatrixString(newMat) << std::endl;
+        glm::mat4 lookatMat = glm::translate(glm::mat4(1.0f), pos) * glm::transpose(glm::lookAt(glm::vec3(0.0f), -glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        std::cout << "transform lookat matrix" << GetMatrixString(lookatMat) << std::endl;*/
+
     }
 
     void initInputStates() {
@@ -164,22 +195,10 @@ private:
     }
 
     void createObjects() {
-        glm::mat4 mat4test = glm::mat4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-        glm::vec4 vec0 = mat4test[0];
-        glm::vec4 vec1 = mat4test[1];
-        glm::vec4 vec2 = mat4test[2];
-        glm::vec4 vec3 = mat4test[3];
-
-        std::cout << "mat4test: " << GetMatrixString(mat4test) << std::endl;
-        std::cout << "vec0:" << glm::to_string(vec0) << std::endl;
-        std::cout << "vec1:" << glm::to_string(vec1) << std::endl;
-        std::cout << "vec2:" << glm::to_string(vec2) << std::endl;
-        std::cout << "vec3:" << glm::to_string(vec3) << std::endl << std::endl;
-
-
         _camera = Camera(75.0f, _renderer.GetSwapChainAspectRatio(), 0.1f, 200.0f);
-        //_camera.transform.SetRotation_Matrix(glm::mat4(1.0f));
-        _camera.transform.LookAt(glm::vec3(0.0f, 0.0f, CAMERA_DISTANCE), glm::vec3(0, 0, 0), glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f)));
+        _camera.transform.SetPosition(glm::vec3(0.0f, 0.0f, CAMERA_DISTANCE));
+        //_camera.transform.SetRotation_Euler(glm::vec3(0.0f, glm::radians(180.0f), 0.0f));
+        _camera.transform.LookAt(glm::vec3(0, 0, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         _renderedObjects.resize(SPAWN_COUNT);
         for (int i = 0; i < _renderedObjects.size(); i++) {
@@ -187,10 +206,10 @@ private:
             xPos = xPos - 0.5f;
             yPos = yPos - 0.5f;
             RenderObject renderObj = RenderObject();
-            glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos * SPAWN_SIZE, yPos * 0.5f * SPAWN_SIZE, -zPos * SPAWN_SIZE));
-            glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-            glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(20.0f * (rand() % 100) / 100.0f * 360.0f), glm::vec3(0.0, 1.0, 0.0));
-            renderObj.transform.setLocalToWorldMatrix(translation * rotation * scale);
+            renderObj.transform.SetPosition(glm::vec3(xPos * SPAWN_SIZE, yPos * 0.5f * SPAWN_SIZE, -zPos * SPAWN_SIZE));
+            renderObj.transform.SetScale(glm::vec3(1.0f));
+            renderObj.transform.SetRotation_Euler(glm::vec3(0.0f, 0.0f, 0.0f));
+
             _renderedObjects[i] = renderObj;
         }
 
@@ -203,13 +222,11 @@ private:
         int val = (int)(glm::round(time) / 0.3f);
  
         for (int i = 0; i < _renderedObjects.size(); i++) {
-            //_renderedObjects[i].transform.Rotate(glm::radians(5.0f) * PenguinEngine::Time::getDeltaTime(), glm::vec3(0.0, 1.0, 0.0));
+            _renderedObjects[i].transform.Rotate(glm::radians(5.0f) * PenguinEngine::Time::getDeltaTime(), glm::vec3(0.0, 1.0, 0.0));
         }
-        //_camera.transform.Rotate(glm::radians(5.0f) * PenguinEngine::Time::getDeltaTime(), glm::vec3(0.0, 1.0, 0.0));
         
         if ((int)glm::floor(time) % 2000 == 0) {
-            //std::cout << "fr:" << time << " euler " << glm::to_string(glm::eulerAngles(_renderedObjects[0].transform.GetRotationQuat())) << std::endl;
-            //std::cout << "rot cam " << GetMatrixString(_renderedObjects[0].transform.GetRotationMatrix()) << std::endl << std::endl;
+            //put update debug here
         }
 
         _camera.aspectRatio = _renderer.GetSwapChainAspectRatio();
@@ -234,7 +251,6 @@ private:
 
     void checkKeyboardInput() {
         float speedMult = _keyStates[GLFW_KEY_LEFT_SHIFT] ? CAMERA_FAST_SPEED_MULTIPLIER : 1.0f;
-        
 
         if (_keyStates[GLFW_KEY_W]) {
             moveCamera(_camera.transform.getForward(), speedMult);
@@ -263,10 +279,10 @@ private:
             rotateDir.x = -1;
         }
         else if (_keyStates[GLFW_KEY_UP]) {
-            rotateDir.y = 1;
+            rotateDir.y = -1;
         }
         else if (_keyStates[GLFW_KEY_DOWN]) {
-            rotateDir.y = -1;
+            rotateDir.y = 1;
         }
         if (rotateDir.x != 0 || rotateDir.y != 0) {
             rotateCamera(rotateDir);
@@ -284,39 +300,53 @@ private:
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        if (_mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState != GLFW_RELEASE) {
-            if (_mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState == GLFW_PRESS) {
-                _prevCursorX = xpos;
-                _prevCursorY = ypos;
-
-                _mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState = GLFW_REPEAT;
-            } else if (std::abs(xpos - _prevCursorX) >= CAMERA_TURN_MIN_SCREEN_DELTA || std::abs(ypos - _prevCursorY) >= CAMERA_TURN_MIN_SCREEN_DELTA) {
-               
-                float dX = xpos - _prevCursorX;
-                float dY = ypos - _prevCursorY;
-
-                float xNDC = (windowSize.x * 0.5f + dX);
-                float yNDC = (windowSize.y * 0.5f + dY);
-                glm::vec3 deltaPos = getScreenSpaceViewPos(xpos, ypos);
-
-                glm::vec3 camForwardPos = _camera.transform.GetPosition() + _camera.transform.getForward();
-                glm::vec3 camNewForwardPos = _camera.transform.GetPosition() + deltaPos;
-                glm::mat4 rotation = glm::lookAt(_camera.transform.GetPosition(), camNewForwardPos, glm::vec3(0.0f, 1.0f, 0.0f));
-                
-                _prevCursorX = xpos;
-                _prevCursorY = ypos;
-
-                glm::vec3 screenWorldPos = _camera.transform.getLocalToWorldMatrix() * getScreenSpaceWorldPos(xpos, ypos);
-                _renderedObjects[0].transform.SetPosition( screenWorldPos);
-                std::cout << "screenWorldPos: <" << glm::to_string(screenWorldPos) << std::endl;
-
-            }
-
-            _rightClickChecker.nextTime = currTime + _rightClickChecker.requiredTime;
+        if (_mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState == GLFW_RELEASE && _mouseStates[GLFW_MOUSE_BUTTON_MIDDLE].buttonState == GLFW_RELEASE) {
+            return;
         }
+
+        if (_mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState == GLFW_PRESS) {
+            _prevCursorX = xpos;
+            _prevCursorY = ypos;
+            _mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState = GLFW_REPEAT;
+        } else if (std::abs(xpos - _prevCursorX) >= CAMERA_TURN_MIN_SCREEN_DELTA || std::abs(ypos - _prevCursorY) >= CAMERA_TURN_MIN_SCREEN_DELTA) {
+            static float maxXNDC = 0.0f;
+            float dX = xpos - _prevCursorX;
+            float dY = ypos - _prevCursorY;
+
+            float xNDC = (dX) / windowSize.x;
+            float yNDC = (dY) / windowSize.y;
+
+            if (maxXNDC < xNDC)
+                maxXNDC = xNDC;
+
+            glm::vec2 delta = glm::vec2(-xNDC, yNDC) / 0.04f;
+            std::cout << "windowSize.x:" << windowSize.x << " | windowSize.y:" << windowSize.y << "  || xNDC" << xNDC << " | yNDC " << yNDC << "  || maxdX " << maxXNDC << std::endl;
+            delta.x = ComputeEaseExponent(glm::abs(delta.x)) * glm::sign(delta.x);
+            delta.y = ComputeEaseExponent(glm::abs(delta.y)) * glm::sign(delta.y);
+            if (_mouseStates[GLFW_MOUSE_BUTTON_RIGHT].buttonState == GLFW_REPEAT) {
+                rotateCamera(delta * 15.0f);
+            }
+            else {
+                glm::vec2 normDelta = glm::normalize(delta);
+                glm::vec3 rightDir = -normDelta.x * _camera.transform.getRight();
+                glm::vec3 upDir = normDelta.y * _camera.transform.getUp();
+                moveCamera(glm::normalize(rightDir + upDir), 4.0f);
+            }
+            _prevCursorX = xpos;
+            _prevCursorY = ypos;
+        }
+
+        _rightClickChecker.nextTime = currTime + _rightClickChecker.requiredTime;
+    }
+
+    float ComputeEaseExponent(float input, float minInput = 0.0f, float maxInput = 1.0f, float lowerBound = 0.0f, float upperBound = 1.0f, float exponent = 4.0f) {
+        float inputRange = glm::abs(maxInput - minInput);
+        float outputRange = glm::abs(upperBound - lowerBound);
+        return upperBound - glm::pow(1.0f + ((minInput - input) / inputRange), exponent) * outputRange;
     }
 
     glm::vec4 getScreenSpaceViewPos(double x, double y) {
+
         float xNdc0 = (2.0f * x / windowSize.x) - 1.0f, yNdc0 = 1.0f - (2.0f * y / windowSize.y);
         glm::vec4 csPos = glm::vec4(xNdc0, yNdc0, -1.0f, 1.0f);
         glm::mat4 invProj = glm::inverse(_camera.GetProjectionMatrix(false));
@@ -347,15 +377,17 @@ private:
         glm::vec3 camPos = _camera.transform.GetPosition();
         camPos += dir * CAMERA_MOVE_SPEED * speedMult * PenguinEngine::Time::getDeltaTime();
         _camera.transform.SetPosition(camPos);
-        std::cout << "model cam:" << GetMatrixString(_camera.transform.getLocalToWorldMatrix()) << std::endl << std::endl;
-
+        //std::cout << "model cam:" << GetMatrixString(_camera.transform.getLocalToWorldMatrix()) << std::endl << std::endl;
         //std::cout << "cam pos: <" << camPos.x << ", " << camPos.y << ", " << camPos.z << ">" << std::endl;
     }
 
     void rotateCamera(glm::vec2 dir) {
+        static glm::vec2 prevDir = glm::vec2(0.0f);
 
         glm::vec3 camEuler = glm::eulerAngles(_camera.transform.GetRotationQuat());
         float turnAngle = glm::radians(CAMERA_TURN_SPEED) * PenguinEngine::Time::getDeltaTime();
+
+
         if (dir.x != 0) {
             _camera.transform.Rotate(turnAngle * dir.x, glm::vec3(0.0f, 1.0f, 0.0f));
             //std::cout << "rot cam" << turnAngle * dir.x << " euler y" << glm::degrees(camEuler.y) << std::endl;
@@ -364,7 +396,7 @@ private:
             _camera.transform.Rotate(turnAngle * dir.y, _camera.transform.getRight());
         }
         //std::cout << "forward " << glm::to_string(_camera.transform.getForward()) << "  euler" << glm::to_string(camEuler) << std::endl;
-        std::cout << "model cam:" << GetMatrixString(_camera.transform.getLocalToWorldMatrix()) << std::endl << std::endl;
+        //std::cout << "model cam:" << GetMatrixString(_camera.transform.getLocalToWorldMatrix()) << std::endl << std::endl;
     }
 
 
