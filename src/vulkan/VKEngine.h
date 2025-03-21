@@ -19,8 +19,8 @@
 
 #include "VKTypes.h"
 #include "VertexData.h"
-#include "RenderObject.h"
-#include "Camera.h"
+#include "../RenderObject.h"
+#include "../Camera.h"
 
 namespace PenguinEngine {
 namespace Graphics {

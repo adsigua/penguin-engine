@@ -23,8 +23,8 @@
 #include <cstring>
 #include <memory>
 
-#include "TransformObject.h"
-#include "Transform.h"
+#include "../TransformObject.h"
+#include "../Transform.h"
 
 namespace PenguinEngine {
 namespace Graphics {

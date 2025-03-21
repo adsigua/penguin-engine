@@ -26,26 +26,29 @@ FetchContent_Declare(tinygltf
     GIT_TAG release
     GIT_PROGRESS ON)
 
-#FetchContent_Declare(vma
-#    GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-#    GIT_TAG master
-#    GIT_PROGRESS ON)
+FetchContent_Declare(SDL3
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG f6864924f76e1a0b4abaefc76ae2ed22b1a8916e
+    GIT_SHALLOW ON
+    GIT_PROGRESS ON)
+
+# START ADDITION
+set(SDL2IMAGE_INSTALL OFF)
+set(BUILD_SHARED_LIBS FALSE)
+# END ADDITION
 
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(tinygltf)
-#FetchContent_MakeAvailable(vma)
+FetchContent_MakeAvailable(SDL3)
 
 project(penguin-engine LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
-file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
-add_executable(penguin-engine "${MY_SOURCES}")
-
-#target_compile_definitions(penguin-engine 
-#    PUBLIC 
-#    RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/"
-#    SOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/")
+file(GLOB_RECURSE TOP_SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
+file(GLOB_RECURSE VULKAN_SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/vulkan/*")
+set(MAIN_SRC ${TOP_SRC} ${VULKAN_SRC})
+add_executable(penguin-engine "${MAIN_SRC}")
 
 target_compile_definitions(penguin-engine 
     PUBLIC 
@@ -57,5 +60,6 @@ target_link_libraries(penguin-engine
 	glfw
 	glm::glm
     tinygltf
+    SDL3::SDL3-static
     Vulkan::Vulkan
 )
