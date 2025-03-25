@@ -2,28 +2,11 @@
 #ifndef PENGUIN_VK_ENGINE
 #define PENGUIN_VK_ENGINE
 
-#define GLFW_INCLUDE_VULKAN
-#define NOMINMAX
-
-#define VK_USE_PLATFORM_WIN32_KHR
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-
-#include "VMAUsage.h"
-//#include "vk_mem_alloc.h"
-
-#include "VKTypes.h"
-#include "VertexData.h"
-#include "../RenderObject.h"
-#include "../Camera.h"
+#include "vk_types.h"
 
 namespace PenguinEngine {
 namespace Graphics {
+namespace Vulkan {
 
     #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -136,7 +119,7 @@ namespace Graphics {
         //bool _framebufferResized = false;
         //uint32_t _currentFrame = 0;
 
-#pragma region Init
+#pragma region initialize
         void createInstance();
 
         bool checkValidationLayerSupport();
@@ -287,6 +270,7 @@ namespace Graphics {
 
 
     };
+}
 }
 }
 

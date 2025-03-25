@@ -3,30 +3,28 @@
 #define PENGUIN_VK_TYPES
 
 #include <deque>
-
+#include <memory>
 #include <optional>
+#include <string>
 #include <vector>
+#include <span>
+#include <array>
+#include <functional>
+
+#define VK_USE_PLATFORM_WIN32_KHR
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
+#include "vk_vma_usage.h"
+
+#include <pengine/core/core_includes.h>
+#include <vk_mem_alloc.h>
 
 namespace PenguinEngine {
 namespace Graphics {
-
-    //struct DeletionQueue
-    //{
-    //    std::deque<std::function<void()>> deletors;
-
-    //    void push_function(std::function<void()>&& function) {
-    //        deletors.push_back(function);
-    //    }
-
-    //    void flush() {
-    //        // reverse iterate the deletion queue to execute all the functions
-    //        for (auto it = deletors.rbegin(); it != deletors.rend(); it++) {
-    //            (*it)(); //call functors
-    //        }
-
-    //        deletors.clear();
-    //    }
-    //};
+namespace Vulkan {
 
     struct FrameData {
         VkSemaphore presentSemaphore, renderSemaphore;
@@ -43,15 +41,6 @@ namespace Graphics {
             vkDestroyFence(device, renderFence, nullptr);
         }
     };
-
-    //struct UniformBufferMemory {
-    //    //VkBuffer uniformBuffer;
-    //    //VmaAllocation allocation;
-    //    //VmaAllocationInfo allocationInfo;
-    //    //VkDeviceMemory deviceMemory;
-    //    //void* uniformBuffersMapped;
-    //    BufferObject bufferObject;
-    //};
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -111,7 +100,15 @@ namespace Graphics {
         }
     };
 
+    struct RenderObjectUniformBufferOjbect {
+        alignas(16) glm::mat4 model;
+    };
 
+    struct CameraUniformBufferOjbect {
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
+    };
+}
 }
 }
 

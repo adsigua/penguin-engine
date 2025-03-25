@@ -1,0 +1,50 @@
+#file(GLOB_RECURSE PENGINE_CORE_SRC "core/*.cpp" "core/*.h")
+#file(GLOB_RECURSE PENGINE_VKENGINE "grapihcs/vk_engine/*.cpp" "grapihcs/vk_engine/*.h")
+file(GLOB_RECURSE PENGINE_CORE_SRC 
+    core/camera.h
+    core/camera.cpp
+    core/random.h
+    core/random.cpp
+    core/transform.h
+    core/transform.cpp
+    core/time.h
+    core/time.cpp
+    core/window.h
+    core/window.cpp
+    core/transform_object.h
+    core/render_object.h
+    core/constants.h
+    core/utilities.h
+    core/core_includes.h
+    
+    graphics/vk_engine/VKTypes.h
+    graphics/vk_engine/VKInit.h
+    graphics/vk_engine/VKEngine.h
+    graphics/vk_engine/VKEngine.cpp
+    graphics/vk_engine/VMAUsage.h
+    graphics/vk_engine/VMAUsage.cpp
+    graphics/vk_engine/VertexData.h
+)
+#file(GLOB_RECURSE PENGINE_VKENGINE 
+#    graphics/vk_engine/VKTypes.h
+#    graphics/vk_engine/VKInit.h
+#    graphics/vk_engine/VKEngine.h
+#    graphics/vk_engine/VKEngine.cpp
+#    graphics/vk_engine/VMAUsage.h
+#    graphics/vk_engine/VMAUsage.cpp
+#    graphics/vk_engine/VertexData.h
+#)
+
+add_library(pengine STATIC ${PENGINE_CORE_SRC} ${PENGINE_VKENGINE})
+
+target_link_libraries(pengine
+    PRIVATE
+    tinygltf
+    vk-bootstrap::vk-bootstrap
+    PUBLIC
+    Vulkan::Vulkan
+    glm
+    glfw
+    imgui
+    SDL3::SDL3-static
+)

@@ -7,15 +7,17 @@ namespace PenguinEngine {
 	class Time {
 
 	public:
-		static void Init();
+		static void initialize();
 
-		static void Tick();
+		static void tick();
 
 		static float getTime();
 
 		static float getTimeInSec();
 
 		static float getDeltaTime();
+
+		static unsigned getTimeStartSeed();
 
 		Time() = delete;
 

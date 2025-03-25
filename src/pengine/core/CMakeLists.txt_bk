@@ -1,0 +1,15 @@
+file(GLOB PENGINE_CORE_SRC 
+    "time.h"
+    "random.h"
+    "transform.h"
+    "transform.cpp"
+)
+add_library(pengine_core STATIC ${PENGINE_CORE_SRC})
+
+target_link_libraries(pengine_core 
+    PUBLIC
+	glm::glm
+    PRIVATE
+	glfw
+    SDL3::SDL3-static
+)

@@ -1,9 +1,13 @@
 #pragma once
-#include <glm/glm.hpp>
-#include <array>
+#ifndef PENGUIN_VK_VERTEX_DATA
+#define PENGUIN_VK_VERTEX_DATA
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+#include <array>
+#include "vk_types.h"
+
+namespace PenguinEngine {
+namespace Graphics {
+namespace Vulkan {
 
 struct Vertex {
     glm::vec3 pos;
@@ -44,14 +48,16 @@ struct Vertex {
         return pos == other.pos && color == other.color && texCoord == other.texCoord;
     }
 };
-
-namespace std {
-    template<> struct hash<Vertex> {
-        size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
+}
+}
 }
 
+//template<> struct std::hash<PenguinEngine::Graphics::VK_Renderer::Vertex> {
+//    size_t operator()(PenguinEngine::Graphics::VK_Renderer::Vertex const& vertex) const {
+//        return ((std::hash<glm::vec3>()(vertex.pos) ^
+//            (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+//            (std::hash<glm::vec2>()(vertex.texCoord) << 1);
+//    }
+//};
+
+#endif

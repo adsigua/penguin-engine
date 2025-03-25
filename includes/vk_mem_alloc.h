@@ -6229,7 +6229,7 @@ public:
     ~VmaDeviceMemoryBlock();
 
     // Always call after construction.
-    void Init(
+    void initialize(
         VmaAllocator hAllocator,
         VmaPool hParentPool,
         uint32_t newMemoryTypeIndex,
@@ -6479,7 +6479,7 @@ public:
     VmaDedicatedAllocationList() {}
     ~VmaDedicatedAllocationList();
 
-    void Init(bool useMutex) { m_UseMutex = useMutex; }
+    void initialize(bool useMutex) { m_UseMutex = useMutex; }
     bool Validate();
 
     void AddDetailedStatistics(VmaDetailedStatistics& inoutStats);
@@ -6667,7 +6667,7 @@ public:
         VkDeviceSize bufferImageGranularity, bool isVirtual);
     virtual ~VmaBlockMetadata() = default;
 
-    virtual void Init(VkDeviceSize size) { m_Size = size; }
+    virtual void initialize(VkDeviceSize size) { m_Size = size; }
     bool IsVirtual() const { return m_IsVirtual; }
     VkDeviceSize GetSize() const { return m_Size; }
 
@@ -6876,7 +6876,7 @@ public:
 
     bool IsEnabled() const { return m_BufferImageGranularity > MAX_LOW_BUFFER_IMAGE_GRANULARITY; }
 
-    void Init(const VkAllocationCallbacks* pAllocationCallbacks, VkDeviceSize size);
+    void initialize(const VkAllocationCallbacks* pAllocationCallbacks, VkDeviceSize size);
     // Before destroying object you must call free it's memory
     void Destroy(const VkAllocationCallbacks* pAllocationCallbacks);
 
@@ -6930,7 +6930,7 @@ VmaBlockBufferImageGranularity::~VmaBlockBufferImageGranularity()
     VMA_ASSERT(m_RegionInfo == VMA_NULL && "Free not called before destroying object!");
 }
 
-void VmaBlockBufferImageGranularity::Init(const VkAllocationCallbacks* pAllocationCallbacks, VkDeviceSize size)
+void VmaBlockBufferImageGranularity::initialize(const VkAllocationCallbacks* pAllocationCallbacks, VkDeviceSize size)
 {
     if (IsEnabled())
     {
@@ -7186,7 +7186,7 @@ public:
     bool IsEmpty() const override { return GetAllocationCount() == 0; }
     VkDeviceSize GetAllocationOffset(VmaAllocHandle allocHandle) const override { return (VkDeviceSize)allocHandle - 1; }
 
-    void Init(VkDeviceSize size) override;
+    void initialize(VkDeviceSize size) override;
     bool Validate() const override;
     size_t GetAllocationCount() const override;
     size_t GetFreeRegionsCount() const override;
@@ -7296,9 +7296,9 @@ VmaBlockMetadata_Linear::VmaBlockMetadata_Linear(const VkAllocationCallbacks* pA
     m_1stNullItemsMiddleCount(0),
     m_2ndNullItemsCount(0) {}
 
-void VmaBlockMetadata_Linear::Init(VkDeviceSize size)
+void VmaBlockMetadata_Linear::initialize(VkDeviceSize size)
 {
-    VmaBlockMetadata::Init(size);
+    VmaBlockMetadata::initialize(size);
     m_SumFreeSize = size;
 }
 
@@ -8803,7 +8803,7 @@ public:
     bool IsEmpty() const override { return m_NullBlock->offset == 0; }
     VkDeviceSize GetAllocationOffset(VmaAllocHandle allocHandle) const override { return ((Block*)allocHandle)->offset; }
 
-    void Init(VkDeviceSize size) override;
+    void initialize(VkDeviceSize size) override;
     bool Validate() const override;
 
     void AddDetailedStatistics(VmaDetailedStatistics& inoutStats) const override;
@@ -8930,12 +8930,12 @@ VmaBlockMetadata_TLSF::~VmaBlockMetadata_TLSF()
     m_GranularityHandler.Destroy(GetAllocationCallbacks());
 }
 
-void VmaBlockMetadata_TLSF::Init(VkDeviceSize size)
+void VmaBlockMetadata_TLSF::initialize(VkDeviceSize size)
 {
-    VmaBlockMetadata::Init(size);
+    VmaBlockMetadata::initialize(size);
 
     if (!IsVirtual())
-        m_GranularityHandler.Init(GetAllocationCallbacks(), size);
+        m_GranularityHandler.initialize(GetAllocationCallbacks(), size);
 
     m_NullBlock = m_BlockAllocator.Alloc();
     m_NullBlock->size = size;
@@ -10089,7 +10089,7 @@ public:
     VmaVirtualBlock_T(const VmaVirtualBlockCreateInfo& createInfo);
     ~VmaVirtualBlock_T();
 
-    VkResult Init() { return VK_SUCCESS; }
+    VkResult initialize() { return VK_SUCCESS; }
     bool IsEmpty() const { return m_Metadata->IsEmpty(); }
     void Free(VmaVirtualAllocation allocation) { m_Metadata->Free((VmaAllocHandle)allocation); }
     void SetAllocationUserData(VmaVirtualAllocation allocation, void* userData) { m_Metadata->SetAllocationUserData((VmaAllocHandle)allocation, userData); }
@@ -10128,7 +10128,7 @@ VmaVirtualBlock_T::VmaVirtualBlock_T(const VmaVirtualBlockCreateInfo& createInfo
         m_Metadata = vma_new(GetAllocationCallbacks(), VmaBlockMetadata_TLSF)(VK_NULL_HANDLE, 1, true);
     }
 
-    m_Metadata->Init(createInfo.size);
+    m_Metadata->initialize(createInfo.size);
 }
 
 VmaVirtualBlock_T::~VmaVirtualBlock_T()
@@ -10256,7 +10256,7 @@ public:
     VMA_ATOMIC_UINT32 m_DeviceMemoryCount; // Total number of VkDeviceMemory objects.
 
     VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo);
-    VkResult Init(const VmaAllocatorCreateInfo* pCreateInfo);
+    VkResult initialize(const VmaAllocatorCreateInfo* pCreateInfo);
     ~VmaAllocator_T();
 
     const VkAllocationCallbacks* GetAllocationCallbacks() const
@@ -10606,7 +10606,7 @@ VmaDeviceMemoryBlock::~VmaDeviceMemoryBlock()
     VMA_ASSERT_LEAK(m_hMemory == VK_NULL_HANDLE);
 }
 
-void VmaDeviceMemoryBlock::Init(
+void VmaDeviceMemoryBlock::initialize(
     VmaAllocator hAllocator,
     VmaPool hParentPool,
     uint32_t newMemoryTypeIndex,
@@ -10638,7 +10638,7 @@ void VmaDeviceMemoryBlock::Init(
         m_pMetadata = vma_new(hAllocator, VmaBlockMetadata_TLSF)(hAllocator->GetAllocationCallbacks(),
             bufferImageGranularity, false); // isVirtual
     }
-    m_pMetadata->Init(newSize);
+    m_pMetadata->initialize(newSize);
 }
 
 void VmaDeviceMemoryBlock::Destroy(VmaAllocator allocator)
@@ -11807,7 +11807,7 @@ VkResult VmaBlockVector::CreateBlock(VkDeviceSize blockSize, size_t* pNewBlockIn
 
     // Create new Allocation for it.
     VmaDeviceMemoryBlock* const pBlock = vma_new(m_hAllocator, VmaDeviceMemoryBlock)(m_hAllocator);
-    pBlock->Init(
+    pBlock->initialize(
         m_hAllocator,
         m_hParentPool,
         m_MemoryTypeIndex,
@@ -13105,7 +13105,7 @@ VmaAllocator_T::VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo) :
     }
 }
 
-VkResult VmaAllocator_T::Init(const VmaAllocatorCreateInfo* pCreateInfo)
+VkResult VmaAllocator_T::initialize(const VmaAllocatorCreateInfo* pCreateInfo)
 {
     VkResult res = VK_SUCCESS;
 
@@ -15073,7 +15073,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateAllocator(
         (VK_VERSION_MAJOR(pCreateInfo->vulkanApiVersion) == 1 && VK_VERSION_MINOR(pCreateInfo->vulkanApiVersion) <= 4));
     VMA_DEBUG_LOG("vmaCreateAllocator");
     *pAllocator = vma_new(pCreateInfo->pAllocationCallbacks, VmaAllocator_T)(pCreateInfo);
-    VkResult result = (*pAllocator)->Init(pCreateInfo);
+    VkResult result = (*pAllocator)->initialize(pCreateInfo);
     if(result < 0)
     {
         vma_delete(pCreateInfo->pAllocationCallbacks, *pAllocator);
@@ -16553,7 +16553,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateVirtualBlock(
     VMA_DEBUG_LOG("vmaCreateVirtualBlock");
     VMA_DEBUG_GLOBAL_MUTEX_LOCK;
     *pVirtualBlock = vma_new(pCreateInfo->pAllocationCallbacks, VmaVirtualBlock_T)(*pCreateInfo);
-    VkResult res = (*pVirtualBlock)->Init();
+    VkResult res = (*pVirtualBlock)->initialize();
     if(res < 0)
     {
         vma_delete(pCreateInfo->pAllocationCallbacks, *pVirtualBlock);

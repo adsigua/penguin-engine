@@ -1,6 +1,4 @@
-#include "VKEngine.h"
-
-#include <glm/gtc/matrix_transform.hpp>
+#include "vk_engine.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -8,7 +6,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-#include <stdlib.h>     /* srand, rand */
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -23,14 +20,9 @@
 #include <cstring>
 #include <memory>
 
-#include "../TransformObject.h"
-#include "../Transform.h"
-
 namespace PenguinEngine {
 namespace Graphics {
-
-    const uint32_t WIDTH = 800;
-    const uint32_t HEIGHT = 600;
+namespace Vulkan {
 
     const std::string MODEL_PATH = "models/viking_room.obj";
     const std::string TEXTURE_PATH = "textures/viking_room.png";
@@ -312,7 +304,7 @@ namespace Graphics {
     }
 #pragma endregion
  
-#pragma region Init
+#pragma region initialize
     void VKEngine::createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -1413,17 +1405,21 @@ namespace Graphics {
             void VKEngine::updateUniformBuffers(Camera camera, std::vector<RenderObject>* renderObjects) {
 
                 CameraUniformBufferOjbect camBufferObject{};
-                camBufferObject.view = glm::mat4(1);
-                camBufferObject.proj = glm::mat4(4);
+                camBufferObject.view = camera.GetViewMatrix();
+                camBufferObject.proj = camera.GetProjectionMatrix();
 
                 //memcpy(_cameraUniformBufferMemory[_currentFrame].uniformBuffersMapped, &camBufferObject, _cameraUniformBufferMemory[_currentFrame].bufferSize);
                 //dmemcpy(objectBufferPtr, (*renderObjects)[0].GetUniformBufferObject(), _renderOjbectsDynamicUniformBufferMemory[_currentFrame].alignmentSize);
-                memcpy(_cameraUniformBufferMemory[_currentFrame].allocationInfo.pMappedData, camera.GetUniformBufferObject(), _cameraUniformBufferMemory[_currentFrame].allocationInfo.size);
+
+                memcpy(_cameraUniformBufferMemory[_currentFrame].allocationInfo.pMappedData, &camBufferObject, _cameraUniformBufferMemory[_currentFrame].allocationInfo.size);
 
                 char* objectBufferPtr = static_cast<char*>(_renderOjbectsDynamicUniformBufferMemory[_currentFrame].allocationInfo.pMappedData);
                 for (unsigned int i = 0; i < (*renderObjects).size(); i++) {
                     uint32_t uniform_offset = static_cast<uint32_t>(_renderOjbectsDynamicUniformBufferMemory[_currentFrame].alignmentSize) * i;
-                    memcpy(objectBufferPtr + uniform_offset, (*renderObjects)[i].GetUniformBufferObject(), _renderOjbectsDynamicUniformBufferMemory[_currentFrame].alignmentSize);
+                    RenderObjectUniformBufferOjbect renderObjectBufferObject;
+                    renderObjectBufferObject.model = (*renderObjects)[i].transform.getLocalToWorldMatrix();
+
+                    memcpy(objectBufferPtr + uniform_offset, &renderObjectBufferObject, _renderOjbectsDynamicUniformBufferMemory[_currentFrame].alignmentSize);
                 }
             }
 
@@ -2004,6 +2000,6 @@ namespace Graphics {
             }
 #pragma endregion
 
-    }
 }
-
+}
+}

@@ -1,2 +1,2 @@
 #define VMA_IMPLEMENTATION
-#include "VMAUsage.h"
+#include "vk_vma_usage.h"
