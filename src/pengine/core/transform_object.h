@@ -7,9 +7,10 @@
 
 #include "transform.h"
 
-class TransformObject {
-public:
-	Transform transform;
-};
-
+namespace penguin_engine {
+	class TransformObject {
+	public:
+		Transform transform;
+	};
+}
 #endif

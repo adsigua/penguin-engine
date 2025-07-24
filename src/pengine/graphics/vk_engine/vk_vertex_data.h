@@ -5,9 +5,9 @@
 #include <array>
 #include "vk_types.h"
 
-namespace PenguinEngine {
-namespace Graphics {
-namespace Vulkan {
+namespace penguin_engine {
+namespace graphics {
+namespace vulkan {
 
 struct Vertex {
     glm::vec3 pos;

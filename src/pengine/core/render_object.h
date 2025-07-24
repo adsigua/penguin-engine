@@ -7,7 +7,7 @@
 
 #include "transform_object.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
 class RenderObject : public TransformObject {
 public:
 

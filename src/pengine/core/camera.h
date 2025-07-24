@@ -13,7 +13,7 @@
 #include "constants.h"
 #include "window.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
 class Camera : public TransformObject {
 public:
 	float fov;

@@ -1,6 +1,6 @@
 #include "window.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
     void Window::initialize() {
         // We initialize SDL and create a window with it.
         SDL_Init(SDL_INIT_VIDEO);
@@ -9,12 +9,12 @@ namespace PenguinEngine {
 
         _window = SDL_CreateWindow(
             "Penguin Engine",
-            DEFAULT_WINDOW_WIDTH,
-            DEFAULT_WINDOW_HEIGHT,
+            constants::DEFAULT_WINDOW_WIDTH,
+            constants::DEFAULT_WINDOW_HEIGHT,
             window_flags);
 
-        _width = DEFAULT_WINDOW_WIDTH;
-        _height = DEFAULT_WINDOW_HEIGHT;
+        _width = constants::DEFAULT_WINDOW_WIDTH;
+        _height = constants::DEFAULT_WINDOW_HEIGHT;
         isInitialized = true;
     }
 
@@ -25,7 +25,7 @@ namespace PenguinEngine {
     }
 
     struct SDL_Window* Window::_window = {nullptr};
-    int Window::_width = DEFAULT_WINDOW_WIDTH;
-    int Window::_height = DEFAULT_WINDOW_HEIGHT;
+    int Window::_width = constants::DEFAULT_WINDOW_WIDTH;
+    int Window::_height = constants::DEFAULT_WINDOW_HEIGHT;
 }
 

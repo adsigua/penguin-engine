@@ -1,6 +1,6 @@
 #include "time.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
 	std::chrono::steady_clock::time_point Time::_startTime = std::chrono::high_resolution_clock::now();;
 	float Time::_time = 0;
 	float Time::_prevTime = 0;

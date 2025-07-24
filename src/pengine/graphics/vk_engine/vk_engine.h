@@ -2,11 +2,14 @@
 #ifndef PENGUIN_VK_ENGINE
 #define PENGUIN_VK_ENGINE
 
-#include "vk_types.h"
+#include <vk_types.h>
+#include <vk_initializers.h>
+#include <vk_vertex_data.h>
+#include <VkBootstrap.h>
 
-namespace PenguinEngine {
-namespace Graphics {
-namespace Vulkan {
+namespace penguin_engine {
+namespace graphics {
+namespace vulkan {
 
     #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -30,43 +33,51 @@ namespace Vulkan {
     public:
         const static int SWAPCHAIN_MAX_SIZE = 5;
 
+        bool isInitialized = false;
+
         VKEngine();
 
         ~VKEngine();
-
-        void InitVulkan(GLFWwindow* window);
+        void init_vk_engine(Window* window);
 
         void RecreateSwapChain();
 
-        void DrawFrame(Camera camera, std::vector<RenderObject>* renderObjects);
+        void draw(Camera camera, std::vector<RenderObject>* renderObjects);
 
         void WaitRendererIdle();
 
         void SetFrameBufferResized(bool wasResized);
 
-        void Cleanup();
+        void cleanup();
 
         float GetSwapChainAspectRatio();
 
     private:
-        GLFWwindow* _window;
+        Window* _window;
 
-        std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
+        VkInstance _instance;// Vulkan library handle
+        VkDebugUtilsMessengerEXT _debug_messenger;// Vulkan debug output handle
+        VkPhysicalDevice _device_physical;// GPU chosen as the default device
+        VkDevice _device_logical; // Vulkan device for commands
+        VkSurfaceKHR _surface;// Vulkan window surface
 
-        VkDebugUtilsMessengerEXT _debugMessenger;
-        VkInstance _instance;
-
+        VkSwapchainKHR _swapchain;
+        VkFormat _swapchainImageFormat;
+        VkExtent2D _swapchainExtent;
+        //SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
+        //SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
+        std::vector<SwapChainData> _swapChainData;
         VmaAllocator _allocator;
             
-        VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
-        VkDevice _device;
-        VkPhysicalDeviceProperties _physicalDeviceProperties;
+        VkPhysicalDeviceProperties _device_properties_physical;
 
-        VkSurfaceKHR _surface;
-        VkQueue _graphicsQueue;
-        VkQueue _presentQueue;
-        VkQueue _transferQueue;
+        FrameData _frames[MAX_FRAMES_IN_FLIGHT];
+
+        QueueFamilyIndices _queue_families;
+
+        VkQueue _graphics_queue;
+        VkQueue _present_queue;
+        VkQueue _transfer_queue;
 
         VkCommandPool _commandPool;
         VkCommandPool _transferCommandPool;
@@ -74,24 +85,14 @@ namespace Vulkan {
         std::vector<const char*> _requiredExtensions;
         std::vector<VkExtensionProperties> _supportedExtensions;
 
-        VkSwapchainKHR _swapChain;
-        VkFormat _swapChainImageFormat;
-
-        VkExtent2D _swapChainExtent;
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
 
         VkRenderPass _renderPass;
         VkPipelineLayout _pipelineLayout;
         VkPipeline _graphicsPipeline;
 
-        FrameData _frames[MAX_FRAMES_IN_FLIGHT];
 
-        SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
-        //std::vector<SwapChainData> _swapChainData;
-
-        //VkBuffer _vertexBuffer;
-        //VkDeviceMemory _vertexBufferMemory;
-        //VkBuffer _indexBuffer;
-        //VkDeviceMemory _indexBufferMemory;
         BufferObject _vertexBufferObject;
         BufferObject _indexBufferObject;
 
@@ -110,79 +111,35 @@ namespace Vulkan {
         AllocatedImage _modelTextureImage;
         AllocatedImage _depthTextureImage;
 
-        //VkImage _depthImage;
-        //VkDeviceMemory _depthImageMemory;
-        //VkImageView _depthImageView;
-
-        //std::vector<SwapChainData> _swapChainData;
-        //std::vector<VkFramebuffer> _swapChainFrameBuffers;
-        //bool _framebufferResized = false;
-        //uint32_t _currentFrame = 0;
-
 #pragma region initialize
-        void createInstance();
+        void init_swapchain();
 
-        bool checkValidationLayerSupport();
+        void init_vulkan();
 
-        void InitExtensions();
+        void init_vma();
 
-        bool isExtensionSupported(const char* extensionName);
+        void init_queue_families(vkb::Device vkbDevice);
 
-        void AddIfSupportedExtension(const char* extensionName, uint32_t extensionFlag, VkInstanceCreateInfo* createInfo);
+        void init_commands();
 
-        void PrintInstanceRequiredExtensions(VkInstanceCreateInfo createInfo);
-
-        void PrintSupportedExtensions();
-
-        void pickPhysicalDevice();
-
-        bool isDeviceSuitable(VkPhysicalDevice device);
-
-        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-
-        int rateDeviceSuitability(VkPhysicalDevice device);
-
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-
-        void createLogicalDevice(); 
-
-        void createSurface();
-
-        void createSurfaceVulkan(GLFWwindow* window);
-
-        void initVMA();
-#pragma endregion
-
-#pragma region Validation Layers
-
-        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-
-        void setupDebugMessenger();
+        void init_sync_structs();
 #pragma endregion
 
 #pragma region SwapChain
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+        void create_swapchain(uint32_t width, uint32_t height);
 
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-
-        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
-
-        void createSwapChain();
-
-        void createSwapChainImageViews();
-
-        void cleanupSwapChain();
+        void destroy_swapchain();
 #pragma endregion
 
 #pragma region Buffers
-        VkDeviceSize getAlignment(VkDeviceSize bufferSize, VkDeviceSize minBufferAlignment);
+        VkDeviceSize get_alignment(VkDeviceSize bufferSize, VkDeviceSize minBufferAlignment);
 
         //void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo);
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, BufferObject& bufferObject);
         
+        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
         void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -207,7 +164,7 @@ namespace Vulkan {
 
         void createCommandBuffer();
 
-        void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, std::vector<RenderObject>* renderObjects);
+        void record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, std::vector<RenderObject>* renderObjects);
 
 #pragma endregion
 
@@ -265,7 +222,7 @@ namespace Vulkan {
 #pragma endregion
 
 #pragma region Getters
-        FrameData& GetCurrentFrameData();
+        FrameData& get_current_framedata();
 #pragma endregion
 
 

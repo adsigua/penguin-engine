@@ -14,11 +14,9 @@
 //            abort();                                                    \
 //        }                                                               \
 //    } while (0)
+namespace penguin_engine {
 
-namespace PenguinEngine {
-    
-
-namespace Utilities {
+namespace utilities {
     std::string GetMatrixString(glm::mat4 mat) {
         return
             "\n{ " + std::to_string(mat[0][0]) + ", " + std::to_string(mat[1][0]) + ", " + std::to_string(mat[2][0]) + ", " + std::to_string(mat[3][0]) + "\n" +

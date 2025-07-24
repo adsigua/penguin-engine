@@ -7,7 +7,7 @@
 #include "constants.h"
 #include "time.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
 	class Random {
 	public:
 		static void initialize();
@@ -59,7 +59,7 @@ namespace PenguinEngine {
 		}
 
 		static float getRandomAngleRadians() {
-			return getRandomValue() * (float)PenguinEngine::PI * 2.0f;
+			return getRandomValue() * (float)constants::PI * 2.0f;
 		}
 
 		Random() = delete;

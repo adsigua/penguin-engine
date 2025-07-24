@@ -1,8 +1,20 @@
-﻿#include "vk_initializers.h"
+﻿#include <vk_initializers.h>
 
-namespace PenguinEngine {
-namespace Graphics {
-namespace Vulkan {
+namespace penguin_engine {
+namespace graphics {
+namespace vulkan {
+namespace vkinit {
+
+    VmaAllocatorCreateInfo vma_allocator_create_info(uint32_t apiVersion, VkInstance instance, VkDevice device, VkPhysicalDevice physicalDevice) {
+        VmaAllocatorCreateInfo allocatorInfo = {};
+        allocatorInfo.vulkanApiVersion = apiVersion;
+        allocatorInfo.physicalDevice = physicalDevice;
+        allocatorInfo.device = device;
+        allocatorInfo.instance = instance;
+        allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        return allocatorInfo;
+    }
+
     //> init_cmd
     VkCommandPoolCreateInfo command_pool_create_info(uint32_t queueFamilyIndex,
         VkCommandPoolCreateFlags flags /*= 0*/)
@@ -338,5 +350,7 @@ namespace Vulkan {
         info.pName = entry;
         return info;
     }
+}
+}
 }
 }

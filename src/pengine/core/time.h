@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-namespace PenguinEngine {
+namespace penguin_engine {
 	class Time {
 
 	public:

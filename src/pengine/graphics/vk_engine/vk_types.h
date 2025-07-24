@@ -17,28 +17,38 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-#include "vk_vma_usage.h"
+#include <vk_vma_usage.h>
+#include <vk_enum_string_helper.h>
 
 #include <pengine/core/core_includes.h>
 #include <vk_mem_alloc.h>
 
-namespace PenguinEngine {
-namespace Graphics {
-namespace Vulkan {
+namespace penguin_engine {
+namespace graphics {
+namespace vulkan {
 
     struct FrameData {
-        VkSemaphore presentSemaphore, renderSemaphore;
+        VkSemaphore swapchainSemaphore, renderSemaphore;
         VkFence renderFence;
+
+        bool syncingInitialized = false;
 
         VkCommandPool commandPool;
         VkCommandBuffer commandBuffer;
 
+        bool commandsInitialized = false;
+
         //DeletionQueue frameDeletionQueue{};
 
         void DestroyFrameData(VkDevice device) {
-            vkDestroySemaphore(device, presentSemaphore, nullptr);
-            vkDestroySemaphore(device, renderSemaphore, nullptr);
-            vkDestroyFence(device, renderFence, nullptr);
+            if (syncingInitialized) {
+                vkDestroySemaphore(device, swapchainSemaphore, nullptr);
+                vkDestroySemaphore(device, renderSemaphore, nullptr);
+                vkDestroyFence(device, renderFence, nullptr);
+            }
+            if (commandsInitialized) {
+                vkDestroyCommandPool(device, commandPool, nullptr);
+            }
         }
     };
 
@@ -90,13 +100,16 @@ namespace Vulkan {
     };
 
     struct SwapChainData {
-        AllocatedImage allocatedImage;
+        VkImage image;
+        VkImageView imageView;
         VkFramebuffer frameBuffer;
-        bool wasInitialized = false;
+        bool frameBufferInitialized = false;
 
-        void DestroySwapChainData(VkDevice device) {
-            vkDestroyFramebuffer(device, frameBuffer, nullptr);
-            vkDestroyImageView(device, allocatedImage.imageView, nullptr);
+        void destroy_swapchain_data(VkDevice device) {
+            if (frameBufferInitialized) {
+                vkDestroyFramebuffer(device, frameBuffer, nullptr);
+            }
+            vkDestroyImageView(device, imageView, nullptr);
         }
     };
 
@@ -108,6 +121,15 @@ namespace Vulkan {
         alignas(16) glm::mat4 view;
         alignas(16) glm::mat4 proj;
     };
+
+#define VK_CHECK(x)                                                     \
+    do {                                                                \
+        VkResult err = x;                                               \
+        if (err) {                                                      \
+            printf("Detected Vulkan error: %s", string_VkResult(err));  \
+            abort();                                                    \
+        }                                                               \
+    } while (0)
 }
 }
 }

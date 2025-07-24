@@ -1,6 +1,6 @@
 #include "camera.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
 	Camera::Camera(float fov, float aspectRatio, float nearPlane, float farPlane) {
 		this->fov = fov;
 		this->aspectRatio = aspectRatio;
@@ -28,7 +28,7 @@ namespace PenguinEngine {
 	}
 
 	glm::vec4 Camera::GetScreenSpaceViewPos(double x, double y) {
-		float xNdc0 = (2.0f * x / Window::getWindowWidth()) - 1.0f, yNdc0 = 1.0f - (2.0f * y / Window::getWidowHeight());
+		float xNdc0 = (2.0f * x / Window::get_window_width()) - 1.0f, yNdc0 = 1.0f - (2.0f * y / Window::get_window_height());
 		glm::vec4 csPos = glm::vec4(xNdc0, yNdc0, -1.0f, 1.0f);
 		glm::mat4 invProj = glm::inverse(GetProjectionMatrix(false));
 		glm::vec4 vPos = (invProj * csPos) / csPos.w;
@@ -48,7 +48,7 @@ namespace PenguinEngine {
 
 	void Camera::moveCamera(glm::vec3 dir, float speedMult) {
 		glm::vec3 camPos = transform.GetPosition();
-		camPos += dir * CAMERA_MOVE_SPEED * speedMult * PenguinEngine::Time::getDeltaTime();
+		camPos += dir * constants::CAMERA_MOVE_SPEED * speedMult * Time::getDeltaTime();
 		transform.SetPosition(camPos);
 	}
 
@@ -56,7 +56,7 @@ namespace PenguinEngine {
 		static glm::vec2 prevDir = glm::vec2(0.0f);
 
 		glm::vec3 camEuler = glm::eulerAngles(transform.GetRotationQuat());
-		float turnAngle = glm::radians(CAMERA_TURN_SPEED) * PenguinEngine::Time::getDeltaTime();
+		float turnAngle = glm::radians(constants::CAMERA_TURN_SPEED) * Time::getDeltaTime();
 
 		if (dir.x != 0) {
 			transform.Rotate(turnAngle * dir.x, glm::vec3(0.0f, 1.0f, 0.0f));

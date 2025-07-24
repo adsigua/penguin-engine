@@ -1,7 +1,7 @@
 #include "random.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
 	void Random::initialize() {
-		std::srand(PenguinEngine::Time::getTimeStartSeed());
+		std::srand(Time::getTimeStartSeed());
 	}
 }

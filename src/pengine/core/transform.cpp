@@ -1,5 +1,6 @@
 #include "transform.h"
 
+namespace penguin_engine {
 Transform::Transform() {
 	_position = glm::vec3(0.0f, 0.0f, 0.0f);
 	_rotationQuat = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -103,5 +104,6 @@ void Transform::LookAt(glm::vec3 position, glm::vec3 up) {
 	_rotationEuler = glm::eulerAngles(_rotationQuat);
 	_isRotDirty = true;
 	_recomputeBasis = true;
+}
 }
 

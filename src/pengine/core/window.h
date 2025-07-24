@@ -4,9 +4,9 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
-#include <pengine/core/constants.h>
+#include "constants.h"
 
-namespace PenguinEngine {
+namespace penguin_engine {
     class Window {
     public:
         bool isInitialized = false;
@@ -15,15 +15,15 @@ namespace PenguinEngine {
 
         void cleanup();
 
-        struct SDL_Window* getWindow() {
+        struct SDL_Window* getSDLWindow() {
             return _window;
         }
 
-        static int getWindowWidth() {
+        static int get_window_width() {
             return _width;
         }
 
-        static int getWidowHeight() {
+        static int get_window_height() {
             return _height;
         }
 
@@ -32,6 +32,8 @@ namespace PenguinEngine {
         }
 
     private:
+        
+
         static struct SDL_Window* _window;
 
         static int _width;

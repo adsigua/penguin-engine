@@ -10,7 +10,7 @@
 
 #include <thread>
 
-namespace PenguinEngine {
+namespace penguin_engine {
 
 
 struct TimeDelayer {
@@ -31,7 +31,7 @@ public:
 
     void run() {
         initialize();
-        mainLoop();
+        main_loop();
         cleanup();
     }
 
@@ -43,7 +43,7 @@ private:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
 
-    Graphics::VKEngine _renderer;
+    graphics::vulkan::VKEngine _renderer;
     Window _window;
 
     std::vector<RenderObject> _renderedObjects;
@@ -63,7 +63,7 @@ private:
 
     void initialize() {
         _window.initialize();
-        //_renderer.InitVulkan(window);
+        _renderer.init_vk_engine(&_window);
         createObjects();
     }
 
@@ -106,7 +106,7 @@ private:
         app->handleMouseInput(button, action, mods);
     }*/
 
-    void mainLoop() {
+    void main_loop() {
         SDL_Event e;
         bool bQuit = false;
 
@@ -143,16 +143,19 @@ private:
 
     void createObjects() {
         _camera = Camera(75.0f, Window::getWindowAspectRatio(), 0.1f, 200.0f);
-        _camera.transform.SetPosition(glm::vec3(0.0f, 0.0f, CAMERA_DISTANCE));
+        _camera.transform.SetPosition(glm::vec3(0.0f, 0.0f, constants::CAMERA_DISTANCE));
         _camera.transform.LookAt(glm::vec3(0, 0, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        _renderedObjects.resize(SPAWN_COUNT);
+        _renderedObjects.resize(constants::SPAWN_COUNT);
         for (int i = 0; i < _renderedObjects.size(); i++) {
             glm::vec3 randomPos = Random::getRandomInUnitSphere();
             randomPos.x -= -0.5f;
             randomPos.y -= - 0.5f;
             RenderObject renderObj = RenderObject();
-            renderObj.transform.SetPosition(glm::vec3(randomPos.x * SPAWN_SIZE, randomPos.y * 0.5f * SPAWN_SIZE, -randomPos.z * SPAWN_SIZE));
+            renderObj.transform.SetPosition(glm::vec3(
+                randomPos.x * constants::SPAWN_SIZE, 
+                randomPos.y * 0.5f * constants::SPAWN_SIZE, 
+                -randomPos.z * constants::SPAWN_SIZE));
             renderObj.transform.SetScale(glm::vec3(1.0f));
             renderObj.transform.SetRotation_Euler(glm::vec3(0.0f, Random::getRandomAngleRadians(), 0.0f));
 
@@ -175,7 +178,7 @@ private:
     }
 
     void draw() {
-
+        _renderer.draw(_camera, &_renderedObjects);
     }
 
     //void checkKeyboardInput() {
@@ -264,17 +267,16 @@ private:
     
 
     void cleanup() {
+        _renderer.cleanup();
         _window.cleanup();
-        //glfwDestroyWindow(window);
-        //glfwTerminate();
     }
 };
 }
 
 int main(int argc, char* argv[]) {
-    PenguinEngine::Time::initialize();
-    PenguinEngine::Random::initialize();
-    PenguinEngine::PenguinEngineApplication app;
+    penguin_engine::Time::initialize();
+    penguin_engine::Random::initialize();
+    penguin_engine::PenguinEngineApplication app;
 
     try {
         app.run();
