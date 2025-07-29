@@ -1,5 +1,4 @@
-#ifndef PENGUIN_TIME
-#define PENGUIN_TIME
+#pragma once
 
 #include <chrono>
 
@@ -33,4 +32,3 @@ namespace penguin_engine {
 
 }
 
-#endif

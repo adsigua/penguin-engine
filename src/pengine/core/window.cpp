@@ -1,4 +1,7 @@
 #include "window.h"
+#include "constants.h"
+
+#include <SDL3/SDL_vulkan.h>
 
 namespace penguin_engine {
     void Window::initialize() {

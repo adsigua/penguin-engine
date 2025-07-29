@@ -1,14 +1,16 @@
-//#include <vector>
-//#include <unordered_map>
-//#include <cmath>
-
 #include <iostream>
+#include <thread>
 
 #include <SDL3/SDL.h>
-#include <pengine/core/core_includes.h>
-#include <pengine/graphics/vk_engine/vk_engine.h>
 
-#include <thread>
+#include <pengine/core/core_includes.h>
+#include <pengine/graphics/graphics/graphics_includes.h>
+#include <pengine/graphics/vk_engine/vk_engine.h>
+#include <pengine/graphics/vk_engine/vk_types.h>
+//imgui
+#include <imgui.h>
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_vulkan.h>
 
 namespace penguin_engine {
 
@@ -27,8 +29,6 @@ struct MouseInput {
 
 class PenguinEngineApplication {
 public:
-    
-
     void run() {
         initialize();
         main_loop();
@@ -40,9 +40,6 @@ private:
     int _frameNumber{ 0 };
     bool stop_rendering{ false };
 
-    const uint32_t WIDTH = 800;
-    const uint32_t HEIGHT = 600;
-
     graphics::vulkan::VKEngine _renderer;
     Window _window;
 
@@ -50,6 +47,8 @@ private:
 
     std::unordered_map<int, bool> _keyStates;
     std::unordered_map<int, MouseInput> _mouseStates;
+
+    //std::vector<std::shared_ptr<graphics::MeshAsset>> testMeshes;
 
     double _prevCursorX, _prevCursorY;
     glm::vec2 _prevCursorPos;
@@ -66,45 +65,6 @@ private:
         _renderer.init_vk_engine(&_window);
         createObjects();
     }
-
-    /*void initInputStates() {
-        glfwSetKeyCallback(window, inputCallBack);
-        glfwSetMouseButtonCallback(window, mouseCallBack);
-
-        _rightClickChecker.requiredTime = 0.01f;
-        _rightClickChecker.nextTime = 0.0f;
-
-        const int keys[] = {
-            GLFW_KEY_R, GLFW_KEY_W, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_SPACE, GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_UP, GLFW_KEY_DOWN
-        };
-        for (auto key : keys) {
-            _keyStates[key] = false;
-        }
-        const int mouseInputs[] = {
-            GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_MIDDLE
-        };
-        for (auto input : mouseInputs) {
-            _mouseStates[input] = MouseInput{};
-            _mouseStates[input].buttonState = GLFW_RELEASE;
-        }
-        glfwGetCursorPos(window, &_prevCursorX, &_prevCursorY);
-    }*/
-
-    /*static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<PenguinEngineApplication*>(glfwGetWindowUserPointer(window));
-        app->_renderer.SetFrameBufferResized(true);
-        app->windowSize = glm::vec2(width, height);
-    }
-
-    static void inputCallBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        auto app = reinterpret_cast<PenguinEngineApplication*>(glfwGetWindowUserPointer(window));
-        app->handleInput(key, scancode, action, mods);
-    }
-
-    static void mouseCallBack(GLFWwindow* window, int button, int action, int mods) {
-        auto app = reinterpret_cast<PenguinEngineApplication*>(glfwGetWindowUserPointer(window));
-        app->handleMouseInput(button, action, mods);
-    }*/
 
     void main_loop() {
         SDL_Event e;
@@ -128,6 +88,8 @@ private:
                 if (e.type == SDL_EVENT_WINDOW_RESIZED) {
 
                 }
+
+                ImGui_ImplSDL3_ProcessEvent(&e);
             }
 
             // do not draw if we are minimized
@@ -137,12 +99,33 @@ private:
                 continue;
             }
 
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
+
+            if (ImGui::Begin("background")) {
+
+                penguin_engine::graphics::vulkan::ComputeEffect* selected = _renderer.get_current_background_fx();
+
+                ImGui::Text("Selected effect: ", selected->name);
+
+                ImGui::SliderInt("Effect Index", _renderer.get_background_fx_current_index(), 0, _renderer.get_background_fx_count() - 1);
+
+                ImGui::InputFloat4("data1", (float*)&selected->data.data1);
+                ImGui::InputFloat4("data2", (float*)&selected->data.data2);
+                ImGui::InputFloat4("data3", (float*)&selected->data.data3);
+                ImGui::InputFloat4("data4", (float*)&selected->data.data4);
+            }
+            ImGui::End();
+
+            ImGui::Render();
+
             draw();
         }
     }
 
     void createObjects() {
-        _camera = Camera(75.0f, Window::getWindowAspectRatio(), 0.1f, 200.0f);
+        _camera.SetCameraData(75.0f, Window::getWindowAspectRatio(), 0.1f, 200.0f);
         _camera.transform.SetPosition(glm::vec3(0.0f, 0.0f, constants::CAMERA_DISTANCE));
         _camera.transform.LookAt(glm::vec3(0, 0, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -168,7 +151,7 @@ private:
             _renderedObjects[i].transform.Rotate(glm::radians(5.0f) * Time::getDeltaTime(), glm::vec3(0.0, 1.0, 0.0));
         }
 
-        _camera.aspectRatio = _renderer.GetSwapChainAspectRatio();
+        _camera.aspectRatio = _renderer.get_swapchain_aspect_ratio();
     }
 
     void checkForInput() {
@@ -263,8 +246,6 @@ private:
         float outputRange = glm::abs(upperBound - lowerBound);
         return upperBound - glm::pow(1.0f + ((minInput - input) / inputRange), exponent) * outputRange;
     }
-
-    
 
     void cleanup() {
         _renderer.cleanup();

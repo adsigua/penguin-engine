@@ -1,17 +1,9 @@
 #pragma once
-#ifndef CAMERA_H
-#define CAMERA_H
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <string>
 
 #include "transform_object.h"
-#include "time.h"
-#include "constants.h"
-#include "window.h"
 
 namespace penguin_engine {
 class Camera : public TransformObject {
@@ -21,13 +13,7 @@ public:
 	float farPlane;
 	float aspectRatio;
 
-	Camera() {
-	}
-
-	~Camera() {
-	}
-
-	Camera(float fov, float aspectRatio, float nearPlane, float farPlane);
+	void SetCameraData(float fov, float aspectRatio, float nearPlane, float farPlane);
 
 	void ResetCamera();
 
@@ -46,5 +32,3 @@ public:
 
 };
 }
-
-#endif

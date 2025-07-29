@@ -14,6 +14,7 @@ file(GLOB PENGINE_CORE_SRC
     constants.h
     utilities.h
     core_includes.h
+    core_defines.h
 )
 
 add_library(pengine_core STATIC ${PENGINE_CORE_SRC})
@@ -22,6 +23,8 @@ target_compile_definitions(pengine_core
     PUBLIC 
     RESOURCES_PATH="${CMAKE_SOURCE_DIR}/resources/"
     SOURCE_PATH="${CMAKE_SOURCE_DIR}/src/")
+
+target_compile_definitions(pengine_core PUBLIC RESOURCE_DIR="${CMAKE_SOURCE_DIR}/resources")
 
 target_link_libraries(pengine_core
     PUBLIC

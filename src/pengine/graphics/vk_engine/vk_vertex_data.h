@@ -1,6 +1,4 @@
 #pragma once
-#ifndef PENGUIN_VK_VERTEX_DATA
-#define PENGUIN_VK_VERTEX_DATA
 
 #include <array>
 #include "vk_types.h"
@@ -59,5 +57,3 @@ struct Vertex {
 //            (std::hash<glm::vec2>()(vertex.texCoord) << 1);
 //    }
 //};
-
-#endif

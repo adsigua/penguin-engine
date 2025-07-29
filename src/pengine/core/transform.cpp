@@ -1,5 +1,10 @@
 #include "transform.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
+//#include <glm/gtx/matrix_decompose.hpp>
+//#include <glm/gtc/constants.hpp>
+
 namespace penguin_engine {
 Transform::Transform() {
 	_position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -77,6 +82,7 @@ void Transform::RecomputeModelMatrices() {
 	glm::mat4 rotMat = glm::toMat4(_rotationQuat);
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), _scale);
 	_model = translationMat * rotMat * scaleMat;
+	//_model = translationMat * scaleMat;
 	RecomputeWorldToLocal();
 	RecomputeBasisVectors();
 	_isRotDirty = false;
@@ -92,6 +98,7 @@ void Transform::RecomputeBasisVectors() {
 	if (!_recomputeBasis)
 		return;
 	glm::mat3 rotMat = glm::toMat3(_rotationQuat);
+	//glm::mat3 rotMat = glm::mat3(1.0);
 	_right = glm::vec3(rotMat[0]);
 	_up = glm::vec3(rotMat[1]);
 	_forward = glm::vec3(rotMat[2]);
@@ -102,6 +109,7 @@ void Transform::LookAt(glm::vec3 position, glm::vec3 up) {
 	glm::mat4 lookAtMat = glm::lookAt(glm::vec3(0.0f), _position - position, up);
 	_rotationQuat = glm::toQuat(glm::transpose(lookAtMat));
 	_rotationEuler = glm::eulerAngles(_rotationQuat);
+	//_rotationEuler = glm::vec3(0.0f);
 	_isRotDirty = true;
 	_recomputeBasis = true;
 }

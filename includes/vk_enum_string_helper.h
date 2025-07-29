@@ -4834,22 +4834,22 @@ static inline const char* string_VkProvokingVertexModeEXT(VkProvokingVertexModeE
         return "Unhandled VkProvokingVertexModeEXT";
     }
 }
-#ifdef VK_USE_PLATFORM_WIN32_KHR
-static inline const char* string_VkFullScreenExclusiveEXT(VkFullScreenExclusiveEXT input_value) {
-    switch (input_value) {
-    case VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT:
-        return "VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT";
-    case VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT:
-        return "VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT";
-    case VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT:
-        return "VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT";
-    case VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT:
-        return "VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT";
-    default:
-        return "Unhandled VkFullScreenExclusiveEXT";
-    }
-}
-#endif  // VK_USE_PLATFORM_WIN32_KHR
+//#ifdef VK_USE_PLATFORM_WIN32_KHR
+//static inline const char* string_VkFullScreenExclusiveEXT(VkFullScreenExclusiveEXT input_value) {
+//    switch (input_value) {
+//    case VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT:
+//        return "VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT";
+//    case VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT:
+//        return "VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT";
+//    case VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT:
+//        return "VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT";
+//    case VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT:
+//        return "VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT";
+//    default:
+//        return "Unhandled VkFullScreenExclusiveEXT";
+//    }
+//}
+//#endif  // VK_USE_PLATFORM_WIN32_KHR
 static inline const char* string_VkIndirectCommandsTokenTypeNV(VkIndirectCommandsTokenTypeNV input_value) {
     switch (input_value) {
     case VK_INDIRECT_COMMANDS_TOKEN_TYPE_SHADER_GROUP_NV:

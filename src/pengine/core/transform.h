@@ -1,15 +1,7 @@
-#ifndef TRANSFORM_H
-#define TRANSFORM_H
+#pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "core_defines.h"
 #include <glm/gtx/quaternion.hpp>
-
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtc/constants.hpp>
 
 namespace penguin_engine {
 	class Transform {
@@ -99,4 +91,3 @@ namespace penguin_engine {
 		void LookAt(glm::vec3 position, glm::vec3 up);
 	};
 }
-#endif

@@ -1,7 +1,12 @@
 #include "camera.h"
+#include "constants.h"
+#include "time.h"
+#include "window.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace penguin_engine {
-	Camera::Camera(float fov, float aspectRatio, float nearPlane, float farPlane) {
+	void Camera::SetCameraData(float fov, float aspectRatio, float nearPlane, float farPlane) {
 		this->fov = fov;
 		this->aspectRatio = aspectRatio;
 		this->nearPlane = nearPlane;
@@ -36,16 +41,6 @@ namespace penguin_engine {
 		return vPos;
 	}
 
-	/*glm::vec4 GetScreenSpaceWorldPos(double x, double y, float distance = 1.0f) {
-		float xNdc0 = (2.0f * x / windowSize.x) - 1.0f, yNdc0 = 1.0f - (2.0f * y / windowSize.y);
-		glm::vec4 csPos = glm::vec4(xNdc0, yNdc0, -1.0f, 1.0f);
-		glm::mat4 invProj = glm::inverse(GetProjectionMatrix(false));
-		glm::vec4 vPos = (invProj * csPos) / csPos.w;
-
-		glm::vec4 worldPos = GetScreenSpaceViewPos
-		return vPos;
-	}*/
-
 	void Camera::moveCamera(glm::vec3 dir, float speedMult) {
 		glm::vec3 camPos = transform.GetPosition();
 		camPos += dir * constants::CAMERA_MOVE_SPEED * speedMult * Time::getDeltaTime();
@@ -55,7 +50,8 @@ namespace penguin_engine {
 	void Camera::rotateCamera(glm::vec2 dir) {
 		static glm::vec2 prevDir = glm::vec2(0.0f);
 
-		glm::vec3 camEuler = glm::eulerAngles(transform.GetRotationQuat());
+		//glm::vec3 camEuler = glm::eulerAngles(transform.GetRotationQuat());
+		glm::vec3 camEuler = glm::vec3(1.0);
 		float turnAngle = glm::radians(constants::CAMERA_TURN_SPEED) * Time::getDeltaTime();
 
 		if (dir.x != 0) {

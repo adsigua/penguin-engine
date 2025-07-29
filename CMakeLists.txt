@@ -39,6 +39,13 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
+    fastgltf
+    GIT_REPOSITORY https://github.com/spnda/fastgltf.git
+    GIT_TAG v0.9.0
+    GIT_PROGRESS ON
+)
+
+FetchContent_Declare(
     SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG f6864924f76e1a0b4abaefc76ae2ed22b1a8916e
@@ -55,34 +62,40 @@ FetchContent_Declare(
 )
     
 FetchContent_Declare(
-    fetch_vk_bootstrap
+    vk_bootstrap
     GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap
     GIT_TAG v1.4.310 #suggest using a tag so the library doesn't update whenever new commits are pushed to a branch
-)
-
-FetchContent_MakeAvailable(
-    glfw
-    glm
-    tinygltf
-    SDL3
-    imgui
-    fetch_vk_bootstrap
 )
 
 FetchContent_GetProperties(imgui)
 if (NOT imgui_POPULATED)
     FetchContent_Populate(imgui)
 endif ()
+
+FetchContent_MakeAvailable(
+    glfw
+    glm
+    tinygltf
+    fastgltf
+    SDL3
+    imgui
+    vk_bootstrap
+)
+
 set(IMGUI_INCLUDE_DIR ${imgui_SOURCE_DIR}/)
-file(GLOB IMGUI_SOURCES ${imgui_SOURCE_DIR}/*.cpp)
-file(GLOB IMGUI_HEADERS ${imgui_SOURCE_DIR}/*.h)
-add_library(imgui STATIC ${IMGUI_SOURCES} ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp)
+set(IMGUI_INCLUDE_BACKENDS_DIR ${imgui_SOURCE_DIR}/backends/)
+file(GLOB IMGUI_SOURCES ${imgui_SOURCE_DIR}/*.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp)
+file(GLOB IMGUI_HEADERS ${imgui_SOURCE_DIR}/*.h ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.h ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.h)
+add_library(imgui STATIC ${IMGUI_SOURCES} ${IMGUI_HEADERS})
+
 target_link_libraries(imgui
     PUBLIC
     Vulkan::Vulkan
     SDL3::SDL3-static
 )
-target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
+
+target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
+#target_link_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR} ${IMGUI_HEADERS})
 
 # START ADDITION
 set(SDL2IMAGE_INSTALL OFF)
@@ -94,17 +107,25 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(includes)
-
-#link_directories(${VULKAN_SDK_ROOT})
-#include_directories(src/pengine)
-#include_directories(src/vulkan)
+include_directories("${CMAKE_SOURCE_DIR}/src")
 
 add_subdirectory(src/pengine)
 add_subdirectory(src)
-#add_subdirectory(src/pengine/graphics/vk_engine)
 
-#target_link_libraries(src PUBLIC
+
+#if ("${GLSL_VALIDATOR}")
+#    MESSAGE(STATUS "Found glslangValidator")
+#else()
+#    MESSAGE(STATUS "ERROR Did not find ${GLSL_VALIDATOR}")
+#endif()
+
+#add_custom_command(
+#  COMMAND
+#    ${CMAKE_COMMAND} -E make_directory ${SHADER_BINARY_DIR}
+#  OUTPUT ${SHADER_BINARY_DIR}
+#  COMMENT "Creating ${SHADER_BINARY_DIR}"
 #)
 
+#file(MAKE_DIRECTORY ${SHADER_BINARY_DIR})
 
 

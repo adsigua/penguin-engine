@@ -1,21 +1,9 @@
 #pragma once
-#ifndef PENGUIN_UTILITIES_H
-#define PENGUIN_UTILITIES_H
 
-#include <glm/glm.hpp>
+#include "core_defines.h"
 #include <glm/gtx/string_cast.hpp>
-//
-//
-//#define VK_CHECK(x)                                                     \
-//    do {                                                                \
-//        VkResult err = x;                                               \
-//        if (err) {                                                      \
-//            fmt::print("Detected Vulkan error: {}", string_VkResult(err)); \
-//            abort();                                                    \
-//        }                                                               \
-//    } while (0)
-namespace penguin_engine {
 
+namespace penguin_engine {
 namespace utilities {
     std::string GetMatrixString(glm::mat4 mat) {
         return
@@ -26,5 +14,3 @@ namespace utilities {
     }
 }
 }
-
-#endif

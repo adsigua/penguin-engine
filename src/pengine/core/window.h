@@ -1,10 +1,8 @@
 #pragma once
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef PENGINE_CORE_WINDOW_H
+#define PENGINE_CORE_WINDOW_H
 
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-#include "constants.h"
 
 namespace penguin_engine {
     class Window {

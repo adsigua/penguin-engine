@@ -1,11 +1,15 @@
 #pragma once
-#ifndef PENGUIN_VK_ENGINE
-#define PENGUIN_VK_ENGINE
 
-#include <vk_types.h>
-#include <vk_initializers.h>
-#include <vk_vertex_data.h>
+#define VK_USE_PLATFORM_WIN32_KHR
 #include <VkBootstrap.h>
+#include <pengine/core/camera.h>
+#include <pengine/core/window.h>
+#include <pengine/core/render_object.h>
+
+#include "vk_types.h"
+#include "vk_descriptors.h"
+
+#include <functional>
 
 namespace penguin_engine {
 namespace graphics {
@@ -33,41 +37,42 @@ namespace vulkan {
     public:
         const static int SWAPCHAIN_MAX_SIZE = 5;
 
-        bool isInitialized = false;
-
-        VKEngine();
-
-        ~VKEngine();
         void init_vk_engine(Window* window);
-
-        void RecreateSwapChain();
 
         void draw(Camera camera, std::vector<RenderObject>* renderObjects);
 
-        void WaitRendererIdle();
-
-        void SetFrameBufferResized(bool wasResized);
-
         void cleanup();
 
-        float GetSwapChainAspectRatio();
+        void recreate_swapchain();
 
+        void set_framebuffer_was_resized(bool wasResized);
+
+        ComputeEffect* get_current_background_fx();
+
+        int* get_background_fx_current_index();
+
+        int get_background_fx_count();
+
+        float get_swapchain_aspect_ratio();
+
+        GPUMeshBuffers upload_mesh_buffer(std::span<uint32_t> indices, std::span<Vertex> vertices);
     private:
+        bool _isInitialized = false;
+        uint32_t _current_frame_number = 0;
+        uint32_t _current_frame_index = 0;
         Window* _window;
 
         VkInstance _instance;// Vulkan library handle
         VkDebugUtilsMessengerEXT _debug_messenger;// Vulkan debug output handle
-        VkPhysicalDevice _device_physical;// GPU chosen as the default device
-        VkDevice _device_logical; // Vulkan device for commands
+        VkPhysicalDevice _physical_device;// GPU chosen as the default device
+        VkDevice _logical_device; // Vulkan device for commands
         VkSurfaceKHR _surface;// Vulkan window surface
 
         VkSwapchainKHR _swapchain;
-        VkFormat _swapchainImageFormat;
-        VkExtent2D _swapchainExtent;
-        //SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
-        //SwapChainData _swapChainData[SWAPCHAIN_MAX_SIZE];
-        std::vector<SwapChainData> _swapChainData;
-        VmaAllocator _allocator;
+        VkFormat _swapchain_image_format;
+        VkExtent2D _swapchain_extent;
+        std::vector<SwapChainData> _swapchain_data;
+        VmaAllocator _vma_allocator;
             
         VkPhysicalDeviceProperties _device_properties_physical;
 
@@ -75,46 +80,37 @@ namespace vulkan {
 
         QueueFamilyIndices _queue_families;
 
+        DrawImageData _draw_image_data;
+        AllocatedImage _depth_image;
+
+        VkExtent2D _draw_extent;
+
         VkQueue _graphics_queue;
         VkQueue _present_queue;
         VkQueue _transfer_queue;
 
-        VkCommandPool _commandPool;
-        VkCommandPool _transferCommandPool;
+        DescriptorAllocator _descriptor_allocator;
 
-        std::vector<const char*> _requiredExtensions;
-        std::vector<VkExtensionProperties> _supportedExtensions;
+        ImgGUISyncData _imgui_sync_data;
 
-        std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
+        VkPipelineLayout _background_pipeline_layout;
+        //VkPipeline _gradient_pipeline;
+        VkPipelineLayout _triangle_pipeline_layout;
+        VkPipeline _triangle_pipeline;
 
-        VkRenderPass _renderPass;
-        VkPipelineLayout _pipelineLayout;
-        VkPipeline _graphicsPipeline;
+        VkPipelineLayout _mesh_pipeline_layout;
+        VkPipeline _mesh_pipeline;
 
+        std::vector<ComputeEffect> _backgroundEffects;
+        int _currentBackgroundEffect{ 0 };
 
-        BufferObject _vertexBufferObject;
-        BufferObject _indexBufferObject;
-
-        VkDescriptorPool _descriptorPool;
-        VkDescriptorSetLayout _descriptorSetLayout;
-
-        VkDescriptorSet _cameraDescriptorSets[MAX_FRAMES_IN_FLIGHT];
-        VkDescriptorSet _descriptorSets[MAX_FRAMES_IN_FLIGHT];
-        VkDescriptorSet _objectDescriptorSets[MAX_FRAMES_IN_FLIGHT];
-
-        BufferObject _cameraUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
-        BufferObject _renderOjbectsDynamicUniformBufferMemory[MAX_FRAMES_IN_FLIGHT];
-
-        VkSampler _textureSampler;
-
-        AllocatedImage _modelTextureImage;
-        AllocatedImage _depthTextureImage;
+        GPUMeshBuffers rectangle;
+        std::vector<std::shared_ptr<GPUMeshAsset>> testMeshes;
 
 #pragma region initialize
-        void init_swapchain();
-
         void init_vulkan();
+
+        void init_swapchain();
 
         void init_vma();
 
@@ -123,112 +119,62 @@ namespace vulkan {
         void init_commands();
 
         void init_sync_structs();
+
+        void init_descriptors();
+
+        void init_pipelines();
+
+        void init_imgui();
+
+        void init_default_data();
+       
 #pragma endregion
 
 #pragma region SwapChain
         void create_swapchain(uint32_t width, uint32_t height);
 
+        void init_draw_image();
+
         void destroy_swapchain();
 #pragma endregion
 
-#pragma region Buffers
-        VkDeviceSize get_alignment(VkDeviceSize bufferSize, VkDeviceSize minBufferAlignment);
+#pragma region Command Utils
+        void immediate_submit(std::function<void(VkCommandBuffer cmd)>&& function);
+#pragma endregion
 
-        //void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocation& allocation, VmaAllocationInfo& allocationInfo);
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, BufferObject& bufferObject);
-        
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+#pragma region Pipelines
+        void init_background_pipeline();
 
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        void init_triangle_pipeline();
 
-        void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-        void createAndFillBuffer(VkDeviceSize size, VkBufferUsageFlags usage, const void* data, BufferObject& bufferObject);
-
-        VkCommandBuffer beginSingleTimeCommands();
-
-        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+        void init_mesh_pipeline();
 #pragma endregion
 
 #pragma region Rendering
-        void createRenderPass();
-
-        void createGraphicsPipeline();
+        void draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView);
 
         VkShaderModule createShaderModule(const std::vector<char>& code);
 
-        void createFramebuffers();
-
-        void createCommandPool();
-
-        void createCommandBuffer();
-
         void record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, std::vector<RenderObject>* renderObjects);
 
+        void draw_background(VkCommandBuffer cmd);
+
+        void draw_geometry(VkCommandBuffer cmd);
 #pragma endregion
 
-#pragma region Mesh buffers
-        void createVertexBuffer();
+#pragma region Buffers
+        AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
-        void createIndexBuffer();
-#pragma endregion
-
-#pragma region Descriptors
-        void updateUniformBuffers(Camera camera, std::vector<RenderObject>* renderObjects);
-
-        void createUniformBuffers();
-
-        void createDescriptorPool();
-
-        void createDescriptorSetLayout();
-
-        void createDescriptorSets();
-#pragma endregion
-
-#pragma region Textures
-        void createTextureImage();
-
-        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, AllocatedImage& allocatedImage);
-        //void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
         
-        void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-        
-        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
-
-        void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-
-        void createImageView(AllocatedImage& allocatedImage, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
-
-        void createTextureImageView();
-
-        void createTextureSampler();
-
-        void createDepthResources();
-
-        VkFormat findDepthFormat();
-
-        bool hasStencilComponent(VkFormat format);
-
-        VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-#pragma endregion
-
-#pragma region Model
-        void loadModel();
-#pragma endregion
-
-#pragma region Syncing
-        void createSyncObjects();
 #pragma endregion
 
 #pragma region Getters
-        FrameData& get_current_framedata();
+        FrameData& get_current_framedata() {
+            return _frames[_current_frame_index];
+        }
 #pragma endregion
-
-
     };
 }
 }
 }
 
-#endif

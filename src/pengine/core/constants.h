@@ -1,6 +1,4 @@
 #pragma once
-#ifndef PENGUIN_CONSTANTS_H
-#define PENGUIN_CONSTANTS_H
 
 namespace penguin_engine {
 namespace constants {
@@ -14,10 +12,9 @@ namespace constants {
 		static const float CAMERA_TURN_SPEED = 70.0f;
 		static const float CAMERA_TURN_MIN_SCREEN_DELTA = 5.0f;
 
-		static const int DEFAULT_WINDOW_WIDTH = 800;
-		static const int DEFAULT_WINDOW_HEIGHT = 600;
+		static const int DEFAULT_WINDOW_WIDTH = 1280;
+		static const int DEFAULT_WINDOW_HEIGHT = 720;
 
 		static const double PI = 3.141592653589793238462643383279502884L;
 }
 }
-#endif

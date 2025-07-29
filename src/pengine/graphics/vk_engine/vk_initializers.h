@@ -1,10 +1,8 @@
 ﻿// vulkan_guide.h : Include file for standard system include files,
 // or project specific include files.
 #pragma once
-#ifndef PENGUIN_VK_INIT
-#define PENGUIN_VK_INIT
 
-#include <vk_types.h>
+#include "vk_types.h"
 
 namespace penguin_engine {
 namespace graphics {
@@ -59,4 +57,3 @@ namespace vkinit {
 } 
 }
 }
-#endif
